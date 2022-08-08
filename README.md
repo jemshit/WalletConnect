@@ -10,10 +10,12 @@ Implementation of [WalletConnect protocol V1](https://docs.walletconnect.com/tec
 
 ### Install
 
+[![Release](https://jitpack.io/v/jemshit/WalletConnect.svg)](https://jitpack.io/#jemshit/WalletConnect)
+
 **1. DApp & Wallet**
 
 ```kotlin
-implementation("com.jemshit.walletconnect:walletconnect")
+implementation("com.jemshit.walletconnect:walletconnect:x.y.z")
 ```
 
 You can provide your own implementation of [DApp](walletconnect-core/src/main/java/walletconnect/core/DApp.kt)
@@ -22,7 +24,7 @@ and [Wallet](walletconnect-core/src/main/java/walletconnect/core/Wallet.kt)
 **2. Socket**
 
 ```kotlin
-implementation("com.jemshit.walletconnect:walletconnect-socket-scarlet")
+implementation("com.jemshit.walletconnect:walletconnect-socket-scarlet:x.y.z")
 ```
 
 You can provide your own implementation
@@ -31,9 +33,9 @@ of [Socket](walletconnect-core/src/main/java/walletconnect/core/socket/Socket.kt
 **3. Adapter**
 
 ```kotlin
-implementation("com.jemshit.walletconnect:walletconnect-adapter-gson")
+implementation("com.jemshit.walletconnect:walletconnect-adapter-gson:x.y.z")
 // or
-implementation("com.jemshit.walletconnect:walletconnect-adapter-moshi")
+implementation("com.jemshit.walletconnect:walletconnect-adapter-moshi:x.y.z")
 ```
 
 You can provide your own implementation
@@ -42,9 +44,9 @@ of [JsonAdapter](walletconnect-core/src/main/java/walletconnect/core/adapter/Jso
 **4. Session Store**
 
 ```kotlin
-implementation("com.jemshit.walletconnect:walletconnect-store-file")
+implementation("com.jemshit.walletconnect:walletconnect-store-file:x.y.z")
 // or (Android only)
-implementation("com.jemshit.walletconnect:walletconnect-store-prefs")
+implementation("com.jemshit.walletconnect:walletconnect-store-prefs:x.y.z")
 ```
 
 You can provide your own implementation
@@ -68,7 +70,7 @@ of [SessionStore](walletconnect-core/src/main/java/walletconnect/core/session_st
 Make sure to **check Documentation** of Functions & Models. They contain helpful information.
 
 <details>
-<summary> Create DApp/Wallet </summary>
+<summary>Create DApp/Wallet</summary>
 
 ```kotlin
 fun createDApp(sessionStoreName: String)
@@ -193,7 +195,7 @@ fun createJsonAdapter()
 </details>
 
 <details>
-<summary> DApp </summary>
+<summary>DApp</summary>
 
 ```kotlin
 // Init
@@ -349,7 +351,7 @@ fun triggerDeepLink() {
 </details>
 
 <details>
-<summary> Wallet </summary>
+<summary>Wallet</summary>
 
 ```kotlin
 // Init
@@ -505,7 +507,7 @@ Image 2:
 Example in [sample](sample/proguard-rules.pro)
 
 <details>
-<summary> WalletConnect </summary>
+<summary>WalletConnect</summary>
 
 ```proguard
 ### WalletConnect
@@ -534,7 +536,7 @@ Example in [sample](sample/proguard-rules.pro)
 </details>
 
 <details>
-<summary> Other dependencies </summary>
+<summary>Other dependencies</summary>
 
 ```proguard
 ### Kotlin
@@ -612,7 +614,7 @@ Example in [sample](sample/proguard-rules.pro)
   , [2](https://www.baeldung.com/kotlin/jvm-annotations)
 - Use sample as wallet, connecting to web dApp
   using [barcode](https://github.com/trustwallet/wallet-connect-kotlin/commit/fbb51e74349634a04e001091ec2db2d6e9a5053d)
-- Editable Transaction Screen in sample app 
+- Editable Transaction Screen in sample app
 - Unit tests for [DAppManager](walletconnect/src/main/java/walletconnect/DAppManager.kt)
   , [WalletManager](walletconnect/src/main/java/walletconnect/WalletManager.kt)
   , [WalletConnectCore](walletconnect/src/main/java/walletconnect/WalletConnectCore.kt)
