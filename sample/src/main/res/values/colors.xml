@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#3375bb</color>
+    <color name="colorPrimaryDark">#3375bb</color>
+    <color name="colorAccent">#75bb33</color>
+
+    <color name="dapp_bg">#99aab5</color>
+    <color name="dapp_console">#8999A2</color>
+    <color name="wallet_bg">#2C2F33</color>
+    <color name="wallet_console">#232528</color>
+
+    <color name="white">#ffffff</color>
+    <color name="gray">#eeeeee</color>
+    <color name="black">#000000</color>
+    <color name="orange">#FFA500</color>
+    <color name="green">#00cc00</color>
+    <color name="red">#cc0000</color>
+</resources>

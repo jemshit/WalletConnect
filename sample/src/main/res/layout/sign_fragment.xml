@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/white">
+
+    <com.google.android.material.textfield.TextInputEditText
+        android:id="@+id/inputAddress"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/margin_horizontal"
+        android:layout_marginTop="@dimen/margin_horizontal"
+        android:hint="Address"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <com.google.android.material.textfield.TextInputEditText
+        android:id="@+id/inputMessage"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/margin_horizontal"
+        android:layout_marginTop="@dimen/margin_horizontal"
+        android:hint="Message"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/inputAddress" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/buttonSignRequest"
+        style="@style/ButtonStyle"
+        android:layout_width="0dp"
+        android:layout_height="@dimen/button_medium"
+        android:layout_marginTop="@dimen/margin_horizontal"
+        android:text="Sign Request"
+        app:layout_constraintEnd_toEndOf="@+id/buttonPersonalSignRequest"
+        app:layout_constraintStart_toStartOf="@+id/buttonPersonalSignRequest"
+        app:layout_constraintTop_toBottomOf="@+id/inputMessage" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/buttonPersonalSignRequest"
+        style="@style/ButtonStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/button_medium"
+        android:layout_marginHorizontal="@dimen/margin_horizontal"
+        android:layout_marginVertical="@dimen/margin_horizontal"
+        android:text="PersonalSign Request"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/buttonSignRequest" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/buttonApproveRequest"
+        style="@style/ButtonStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/button_medium"
+        android:layout_marginVertical="@dimen/margin_horizontal"
+        android:text="Approve Request"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/buttonPersonalSignRequest" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/buttonRejectRequest"
+        style="@style/ButtonStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/button_medium"
+        android:layout_marginVertical="@dimen/margin_horizontal"
+        android:text="Reject Request"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/buttonApproveRequest" />
+
+    <Space
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/margin_horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/buttonRejectRequest" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

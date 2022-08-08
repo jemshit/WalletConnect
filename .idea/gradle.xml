@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="GradleMigrationSettings" migrationVersion="1" />
+  <component name="GradleSettings">
+    <option name="linkedExternalProjectsSettings">
+      <GradleProjectSettings>
+        <option name="testRunner" value="GRADLE" />
+        <option name="distributionType" value="DEFAULT_WRAPPED" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="gradleJvm" value="adopt-openjdk-11" />
+        <option name="modules">
+          <set>
+            <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/buildSrc" />
+            <option value="$PROJECT_DIR$/sample" />
+            <option value="$PROJECT_DIR$/walletconnect" />
+            <option value="$PROJECT_DIR$/walletconnect-adapter-gson" />
+            <option value="$PROJECT_DIR$/walletconnect-adapter-moshi" />
+            <option value="$PROJECT_DIR$/walletconnect-core" />
+            <option value="$PROJECT_DIR$/walletconnect-requests" />
+            <option value="$PROJECT_DIR$/walletconnect-socket-scarlet" />
+            <option value="$PROJECT_DIR$/walletconnect-store-file" />
+            <option value="$PROJECT_DIR$/walletconnect-store-prefs" />
+          </set>
+        </option>
+      </GradleProjectSettings>
+    </option>
+  </component>
+</project>

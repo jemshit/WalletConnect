@@ -1,0 +1,39 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+    </style>
+
+    <style name="ButtonStyle" parent="Widget.MaterialComponents.Button">
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textSize">11dp</item>
+        <item name="android:textColor">#ffffff</item>
+        <item name="android:paddingStart">4dp</item>
+        <item name="android:paddingEnd">4dp</item>
+        <item name="android:paddingTop">2dp</item>
+        <item name="android:paddingBottom">2dp</item>
+        <item name="android:background">@color/colorPrimary</item>
+        <item name="backgroundTint">@color/colorPrimary</item>
+    </style>
+
+    <style name="ButtonStyleBlack" parent="Widget.MaterialComponents.Button">
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textSize">11dp</item>
+        <item name="android:textColor">#ffffff</item>
+        <item name="android:paddingStart">4dp</item>
+        <item name="android:paddingEnd">4dp</item>
+        <item name="android:paddingTop">2dp</item>
+        <item name="android:paddingBottom">2dp</item>
+        <item name="android:background">@color/black</item>
+        <item name="backgroundTint">@color/black</item>
+    </style>
+
+    <style name="ButtonStyleAccent" parent="@style/ButtonStyle">
+        <item name="backgroundTint">@color/colorAccent</item>
+    </style>
+
+</resources>

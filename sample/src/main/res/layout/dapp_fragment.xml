@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/dapp_bg">
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/textTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/margin"
+        android:text="dApp"
+        android:textColor="@color/white"
+        android:textSize="14dp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@+id/imageSessionList"
+        app:layout_constraintEnd_toStartOf="@+id/imageSessionList"
+        app:layout_constraintHorizontal_chainStyle="packed"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/imageSessionList" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/imageSessionList"
+        style="@style/ButtonStyle"
+        android:layout_width="48dp"
+        android:layout_height="20dp"
+        android:layout_marginStart="@dimen/margin"
+        android:layout_marginTop="@dimen/margin"
+        android:includeFontPadding="false"
+        android:padding="0dp"
+        android:text="Sessions"
+        android:textColor="@color/black"
+        android:textSize="8dp"
+        app:backgroundTint="@color/white"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/textTitle"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+    <!-- SessionState -->
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/imageMyLogo"
+        android:layout_width="@dimen/button"
+        android:layout_height="@dimen/button"
+        android:layout_marginStart="@dimen/margin"
+        android:adjustViewBounds="true"
+        android:scaleType="centerInside"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imageSessionList" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/textMyId"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/margin"
+        android:textColor="@color/white"
+        android:textSize="11dp"
+        app:layout_constraintBottom_toBottomOf="@+id/imageMyLogo"
+        app:layout_constraintStart_toEndOf="@+id/imageMyLogo"
+        app:layout_constraintTop_toTopOf="@+id/imageMyLogo"
+        tools:text="MyId" />
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/imageRemoteLogo"
+        android:layout_width="@dimen/button"
+        android:layout_height="@dimen/button"
+        android:layout_marginStart="@dimen/margin"
+        android:adjustViewBounds="true"
+        android:scaleType="centerInside"
+        app:layout_constraintStart_toEndOf="@+id/textMyId"
+        app:layout_constraintTop_toBottomOf="@+id/imageSessionList" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/textRemoteId"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/margin"
+        android:textColor="@color/white"
+        android:textSize="11dp"
+        app:layout_constraintBottom_toBottomOf="@+id/imageRemoteLogo"
+        app:layout_constraintStart_toEndOf="@+id/imageRemoteLogo"
+        app:layout_constraintTop_toTopOf="@+id/imageRemoteLogo"
+        tools:text="RemoteId" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/textChainId"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/margin_horizontal"
+        android:layout_marginEnd="@dimen/margin"
+        android:textColor="@color/white"
+        android:textSize="10dp"
+        app:layout_constraintStart_toEndOf="@+id/textRemoteId"
+        app:layout_constraintTop_toTopOf="@+id/imageRemoteLogo"
+        tools:text="ChainId" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/textAccounts"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/margin_horizontal"
+        android:layout_marginEnd="@dimen/margin"
+        android:gravity="start|center_vertical"
+        android:textColor="@color/white"
+        android:textSize="10dp"
+        app:layout_constraintBottom_toBottomOf="@+id/imageRemoteLogo"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/textRemoteId"
+        app:layout_constraintTop_toBottomOf="@+id/textChainId"
+        tools:text="Accounts" />
+
+    <!-- Console -->
+    <ScrollView
+        android:id="@+id/scrollView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginVertical="@dimen/margin"
+        android:background="@color/dapp_console"
+        android:fillViewport="true"
+        app:layout_constraintBottom_toTopOf="@+id/textCallbacks"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imageMyLogo">
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/textConsole"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="@dimen/margin_horizontal"
+            android:textColor="@color/white"
+            android:textSize="@dimen/console_text_size"
+            tools:text="--- open\n---close\n\n#someFunction(1)" />
+    </ScrollView>
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/textCallbacks"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/margin"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:paddingHorizontal="@dimen/margin_horizontal"
+        android:textColor="@color/colorPrimary"
+        android:textSize="8dp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/horizontalView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:text="SessionApproved - SessionClosed - SessionApproved - SessionClosed - SessionApproved - SessionClosed" />
+
+    <HorizontalScrollView
+        android:id="@+id/horizontalView"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingBottom="@dimen/margin">
+
+            <!-- Socket -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonClear"
+                style="@style/ButtonStyleBlack"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/button"
+                android:layout_marginStart="@dimen/margin_horizontal"
+                android:text="Clear" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonOpen"
+                style="@style/ButtonStyleBlack"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/button"
+                android:layout_marginStart="@dimen/margin"
+                android:text="Open" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonClose"
+                style="@style/ButtonStyleBlack"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/button"
+                android:layout_marginStart="@dimen/margin"
+                android:text="Close" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonDelete"
+                style="@style/ButtonStyleBlack"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/button"
+                android:layout_marginStart="@dimen/margin"
+                android:text="Delete" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonSendSessionRequest"
+                style="@style/ButtonStyleAccent"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/button"
+                android:layout_marginStart="@dimen/margin"
+                android:text="Session Request" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonSendSignRequest"
+                style="@style/ButtonStyleAccent"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/button"
+                android:layout_marginStart="@dimen/margin"
+                android:text="Sign Request" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonSignTx"
+                style="@style/ButtonStyleAccent"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/button"
+                android:layout_marginStart="@dimen/margin"
+                android:text="Sign Tx" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonSendTx"
+                style="@style/ButtonStyleAccent"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/button"
+                android:layout_marginStart="@dimen/margin"
+                android:text="Send Tx" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonSendTokenTx"
+                style="@style/ButtonStyleAccent"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/button"
+                android:layout_marginStart="@dimen/margin"
+                android:text="Send Token Tx" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonDeepLink"
+                style="@style/ButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/button"
+                android:layout_marginStart="@dimen/margin"
+                android:layout_marginEnd="@dimen/margin_horizontal"
+                android:text="Deep Link" />
+
+        </androidx.appcompat.widget.LinearLayoutCompat>
+    </HorizontalScrollView>
+</androidx.constraintlayout.widget.ConstraintLayout>

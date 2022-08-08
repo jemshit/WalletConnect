@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="3dp"
+    tools:parentTag="com.google.android.material.card.MaterialCardView">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingVertical="@dimen/margin">
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/imagePeerLogo"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginVertical="@dimen/margin"
+            android:layout_marginStart="@dimen/margin"
+            android:scaleType="centerInside"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/textTopic"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/margin"
+            android:ellipsize="end"
+            android:gravity="start|center_vertical"
+            android:maxLines="1"
+            android:textColor="@color/black"
+            android:textSize="12dp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toStartOf="@+id/imageDeleteSession"
+            app:layout_constraintStart_toEndOf="@+id/imagePeerLogo"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="Topic" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/textPeerId"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/margin"
+            android:ellipsize="end"
+            android:gravity="start|center_vertical"
+            android:maxLines="1"
+            android:textColor="@color/black"
+            android:textSize="12dp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toStartOf="@+id/imageDeleteSession"
+            app:layout_constraintStart_toEndOf="@+id/imagePeerLogo"
+            app:layout_constraintTop_toBottomOf="@+id/textTopic"
+            tools:text="PeerId" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/textRPeerId"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/margin"
+            android:ellipsize="end"
+            android:gravity="start|center_vertical"
+            android:maxLines="1"
+            android:textColor="@color/black"
+            android:textSize="12dp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toStartOf="@+id/imageDeleteSession"
+            app:layout_constraintStart_toEndOf="@+id/imagePeerLogo"
+            app:layout_constraintTop_toBottomOf="@+id/textPeerId"
+            tools:text="RPeerId" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/textPeerName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/margin"
+            android:ellipsize="end"
+            android:gravity="start|center_vertical"
+            android:maxLines="1"
+            android:textColor="@color/colorPrimary"
+            android:textSize="12dp"
+            android:textStyle="normal"
+            app:layout_constraintEnd_toStartOf="@+id/imageDeleteSession"
+            app:layout_constraintStart_toEndOf="@+id/imagePeerLogo"
+            app:layout_constraintTop_toBottomOf="@+id/textRPeerId"
+            tools:text="Name" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/textPeerDesc"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/margin"
+            android:ellipsize="end"
+            android:gravity="start|center_vertical"
+            android:maxLines="1"
+            android:textColor="@color/colorPrimary"
+            android:textSize="12dp"
+            android:textStyle="normal"
+            app:layout_constraintEnd_toStartOf="@+id/imageDeleteSession"
+            app:layout_constraintStart_toEndOf="@+id/imagePeerLogo"
+            app:layout_constraintTop_toBottomOf="@+id/textPeerName"
+            tools:text="Desc" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/textPeerUrl"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/margin"
+            android:ellipsize="end"
+            android:gravity="start|center_vertical"
+            android:maxLines="1"
+            android:textColor="@color/colorPrimary"
+            android:textSize="12dp"
+            android:textStyle="normal"
+            app:layout_constraintEnd_toStartOf="@+id/imageDeleteSession"
+            app:layout_constraintStart_toEndOf="@+id/imagePeerLogo"
+            app:layout_constraintTop_toBottomOf="@+id/textPeerDesc"
+            tools:text="https://url.com" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/textChainId"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/margin"
+            android:ellipsize="end"
+            android:gravity="start|center_vertical"
+            android:maxLines="1"
+            android:textColor="@color/colorAccent"
+            android:textSize="12dp"
+            android:textStyle="normal"
+            app:layout_constraintEnd_toStartOf="@+id/imageDeleteSession"
+            app:layout_constraintStart_toEndOf="@+id/imagePeerLogo"
+            app:layout_constraintTop_toBottomOf="@+id/textPeerUrl"
+            tools:text="chainId" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/textAccounts"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/margin"
+            android:gravity="start|center_vertical"
+            android:textColor="@color/colorAccent"
+            android:textSize="12dp"
+            android:textStyle="normal"
+            app:layout_constraintEnd_toStartOf="@+id/imageDeleteSession"
+            app:layout_constraintStart_toEndOf="@+id/imagePeerLogo"
+            app:layout_constraintTop_toBottomOf="@+id/textChainId"
+            tools:text="Account_1\nAccount_2" />
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/imageDeleteSession"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginVertical="@dimen/margin"
+            android:layout_marginEnd="@dimen/margin"
+            android:background="?attr/selectableItemBackground"
+            android:scaleType="centerCrop"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@android:drawable/ic_menu_delete"
+            app:tint="@color/black" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</merge>

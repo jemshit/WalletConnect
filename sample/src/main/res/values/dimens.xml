@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="margin">8dp</dimen>
+    <dimen name="margin_horizontal">16dp</dimen>
+    <dimen name="console_text_size">10dp</dimen>
+    <dimen name="button">32dp</dimen>
+    <dimen name="button_medium">40dp</dimen>
+    <dimen name="card_radius">8dp</dimen>
+    <dimen name="card_elevation">3dp</dimen>
+</resources>
