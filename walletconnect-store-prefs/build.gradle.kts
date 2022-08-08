@@ -2,6 +2,7 @@ plugins {
     id("com.android.library")
     id("kotlin-android")
     id("maven-publish")
+    id("org.jetbrains.dokka")
 }
 
 android {
@@ -46,6 +47,7 @@ android {
             withJavadocJar()
         }
     }
+
 }
 
 afterEvaluate {
@@ -67,6 +69,7 @@ afterEvaluate {
 dependencies {
     api(project(":walletconnect-core"))
     testImplementation(testFixtures(project(":walletconnect-core")))
+    dokkaJavadocPlugin(Dependencies.kotlinDokka)
 
     implementation(Dependencies.kotlinJDK8)
     implementation(Dependencies.kotlinCoroutines)

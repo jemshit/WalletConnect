@@ -7,6 +7,23 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.6.0] - 2022-08-08
+
+### Changed
+
+- [DAppManager](walletconnect/src/main/java/walletconnect/DAppManager.kt)
+  , [WalletManager](walletconnect/src/main/java/walletconnect/WalletManager.kt)
+  , [WalletConnectCore](walletconnect/src/main/java/walletconnect/WalletConnectCore.kt) constructors takes `Socket` as
+  parameter instead of `socketFactory`
+
+### Added
+
+- Dokka plugin for kotlin Javadoc (still may not work)
+
+### Fixed
+
+- `walletconnect-adapter-gson` and `walletconnect-adapter-moshi` modules artifacts bug
+
 ## [0.5.0] - 2022-08-08
 
 ### Added
@@ -20,5 +37,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Unit tests (except `:walletconnect` module)
 
 [Unreleased]: https://github.com/jemshit/walletconnect/compare/master...develop
+
+[0.6.0]: https://github.com/jemshit/walletconnect/compare/0.5.0..0.6.0
 
 [0.5.0]: https://github.com/jemshit/walletconnect/releases/tag/0.5.0

@@ -4,6 +4,7 @@ plugins {
     id("kotlin")
     id("java-test-fixtures")
     id("maven-publish")
+    id("org.jetbrains.dokka")
 }
 
 java {
@@ -30,6 +31,8 @@ publishing {
 }
 
 dependencies {
+    dokkaJavadocPlugin(Dependencies.kotlinDokka)
+
     implementation(Dependencies.kotlinJDK8)
     implementation(Dependencies.kotlinCoroutines)
     testImplementation(Dependencies.kotlinCoroutinesTest)

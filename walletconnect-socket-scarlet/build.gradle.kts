@@ -3,6 +3,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     id("kotlin")
     id("maven-publish")
+    id("org.jetbrains.dokka")
 }
 
 java {
@@ -35,6 +36,7 @@ publishing {
 dependencies {
     api(project(":walletconnect-core"))
     testImplementation(testFixtures(project(":walletconnect-core")))
+    dokkaJavadocPlugin(Dependencies.kotlinDokka)
 
     implementation(Dependencies.kotlinJDK8)
     implementation(Dependencies.kotlinCoroutines)

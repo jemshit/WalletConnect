@@ -1,9 +1,12 @@
 object Dependencies {
     const val kotlinVersion = "1.6.21"
     const val kotlinCoroutinesVersion = "1.6.3"
-    const val kotlinJDK8 = "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${kotlinVersion}"
-    const val kotlinCoroutines = "org.jetbrains.kotlinx:kotlinx-coroutines-core:${kotlinCoroutinesVersion}"
-    const val kotlinCoroutinesTest = "org.jetbrains.kotlinx:kotlinx-coroutines-test:${kotlinCoroutinesVersion}"
+    const val kotlinDokkaVersion = "1.6.21" // exists at top of every build.gradle
+
+    const val kotlinJDK8 = "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
+    const val kotlinCoroutines = "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesVersion"
+    const val kotlinCoroutinesTest = "org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlinCoroutinesVersion"
+    const val kotlinDokka = "org.jetbrains.dokka:kotlin-as-java-plugin:$kotlinDokkaVersion"
 
     const val okHttp = "com.squareup.okhttp3:okhttp:4.9.3"
     const val okHttpInterceptor = "com.squareup.okhttp3:logging-interceptor:4.9.3"

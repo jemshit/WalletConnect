@@ -8,11 +8,11 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import walletconnect.core.Failure
 import walletconnect.core.FailureType
+import walletconnect.core.Wallet
 import walletconnect.core.adapter.JsonAdapter
 import walletconnect.core.requests.eth.EthSign
 import walletconnect.core.requests.eth.EthTransaction
 import walletconnect.core.requests.eth.SignType
-import walletconnect.core.Wallet
 import walletconnect.core.session.callback.RequestCallback
 import walletconnect.core.session.callback.SessionCallback
 import walletconnect.core.session.model.SessionRequest
@@ -30,12 +30,12 @@ import walletconnect.core.util.Logger
 import walletconnect.core.util.logger_impl.EmptyLogger
 import java.lang.reflect.Type
 
-class WalletManager(socketFactory: (String) -> Socket,
+class WalletManager(socket: Socket,
                     sessionStore: SessionStore,
                     jsonAdapter: JsonAdapter,
                     dispatcherProvider: DispatcherProvider,
                     logger: Logger = EmptyLogger)
-    : Wallet, WalletConnectCore(isDApp = false, socketFactory, sessionStore, jsonAdapter, dispatcherProvider, logger) {
+    : Wallet, WalletConnectCore(isDApp = false, socket, sessionStore, jsonAdapter, dispatcherProvider, logger) {
 
     private val LogTag = "Wallet"
 

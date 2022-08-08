@@ -29,7 +29,8 @@ abstract class ClientServerFactory {
     protected lateinit var serverSocket: Socket
     protected lateinit var clientSocket: Socket
 
-    private fun createServer(lifecycleRegistry: LifecycleRegistry)
+    private fun createServer(url: String,
+                             lifecycleRegistry: LifecycleRegistry)
             : SocketService {
         // create new for each test!
         mockWebServer = MockWebServer()
@@ -45,7 +46,8 @@ abstract class ClientServerFactory {
         return scarlet.create(SocketService::class.java)
     }
 
-    private fun createClient(lifecycleRegistry: LifecycleRegistry)
+    private fun createClient(url: String,
+                             lifecycleRegistry: LifecycleRegistry)
             : SocketService {
         val okHttpClient = OkHttpClient.Builder()
                 .writeTimeout(1000, TimeUnit.MILLISECONDS)

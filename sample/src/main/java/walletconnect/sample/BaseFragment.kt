@@ -212,7 +212,7 @@ abstract class BaseFragment : Fragment() {
         return scarlet.create(SocketService::class.java)
     }
 
-    private fun createSocket(url: String)
+    private fun createSocket()
             : Socket {
         val gson = GsonBuilder()
                 .registerTypeAdapter(SocketMessageType::class.java, SocketMessageTypeAdapter())
@@ -220,7 +220,7 @@ abstract class BaseFragment : Fragment() {
                 .create()
 
         return SocketManager(
-                socketServiceFactory = { lifecycleRegistry -> createSocketService(url, lifecycleRegistry) },
+                socketServiceFactory = { url, lifecycleRegistry -> createSocketService(url, lifecycleRegistry) },
                 gson,
                 dispatcherProvider,
                 logger
@@ -264,7 +264,7 @@ abstract class BaseFragment : Fragment() {
     protected fun createDApp(sessionStoreName: String)
             : DApp {
         return DAppManager(
-                socketFactory = { url -> createSocket(url) },
+                socket = createSocket(),
                 sessionStore = createSessionStore(sessionStoreName),
                 jsonAdapter = createJsonAdapter(),
                 dispatcherProvider,
@@ -275,7 +275,7 @@ abstract class BaseFragment : Fragment() {
     protected fun createWallet(sessionStoreName: String)
             : Wallet {
         return WalletManager(
-                { url -> createSocket(url) },
+                createSocket(),
                 createSessionStore(sessionStoreName),
                 createJsonAdapter(),
                 dispatcherProvider,

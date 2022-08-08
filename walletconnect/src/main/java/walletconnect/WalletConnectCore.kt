@@ -6,7 +6,10 @@ package walletconnect
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import walletconnect.core.Failure
 import walletconnect.core.FailureType
 import walletconnect.core.adapter.JsonAdapter
@@ -38,7 +41,7 @@ import java.util.concurrent.locks.ReentrantLock
 import kotlin.math.max
 
 abstract class WalletConnectCore(private val isDApp: Boolean,
-                                 protected val socketFactory: (String) -> Socket,
+                                 protected val socket: Socket,
                                  protected val sessionStore: SessionStore,
                                  protected val jsonAdapter: JsonAdapter,
                                  protected val dispatcherProvider: DispatcherProvider,
@@ -49,8 +52,6 @@ abstract class WalletConnectCore(private val isDApp: Boolean,
 
     protected lateinit var coroutineScope: CoroutineScope
     protected val initialized = AtomicBoolean(false)
-    /** Private -> use [publish] */
-    private lateinit var socket: Socket
     /** [openSocket], [disconnectSocket], [reconnectSocket], [close] method calls are synchronized */
     private val socketConnectionLock = ReentrantLock(true)
     @Volatile
@@ -159,7 +160,7 @@ abstract class WalletConnectCore(private val isDApp: Boolean,
         if (initialized.get()) {
             return
         }
-        if (::socket.isInitialized && socket.isConnected()) {
+        if (socket.isConnected()) {
             logger.error(LogTag, "#openSocket(): Already socket.isConnected")
             failureCallback(Failure(type = FailureType.SessionError,
                                     message = "socket isConnected, can't reuse"))
@@ -183,7 +184,6 @@ abstract class WalletConnectCore(private val isDApp: Boolean,
             this.initialState = initialState
             this.sessionCallback = callback // init before [sessionState]
             this.sessionState = prevSessionState // this uses [sessionCallback]
-            this.socket = socketFactory(initialState.connectionParams.bridgeUrl)
             if (prevSessionState != null) {
                 this.sessionApproved.set(true)
                 callback(SessionCallback.SessionRestoredLocally)
@@ -196,6 +196,7 @@ abstract class WalletConnectCore(private val isDApp: Boolean,
             initialized.set(true)
 
             socket.open(
+                    url = initialState.connectionParams.bridgeUrl,
                     connectionListener = { connectionState ->
                         when (connectionState) {
                             SocketConnectionState.Connecting -> {

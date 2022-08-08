@@ -43,14 +43,14 @@ class SocketManagerTest : ClientServerFactory() {
         val threadList = mutableListOf<Thread>()
         var exceptionFound = false
 
-        serverSocket.open({}, { _, _ -> })
+        serverSocket.open("", {}, { _, _ -> })
         mockWebServer.start()
 
         // run Threads concurrently
         for (counter in 0 until 100) {
             val thread = Thread {
                 try {
-                    clientSocket.open({}, { _, _ -> })
+                    clientSocket.open("", {}, { _, _ -> })
                     clientSocket.close()
                 } catch (error: Throwable) {
                     error.printStackTrace()
@@ -75,13 +75,13 @@ class SocketManagerTest : ClientServerFactory() {
 
     @Test
     fun openIdempotent() = runTest {
-        serverSocket.open({}, { _, _ -> })
+        serverSocket.open("", {}, { _, _ -> })
         mockWebServer.start()
-        clientSocket.open({}, { _, _ -> })
+        clientSocket.open("", {}, { _, _ -> })
         blockUntilIsConnected()
 
         for (counter in 0 until 100) {
-            clientSocket.open({}, { _, _ -> })
+            clientSocket.open("", {}, { _, _ -> })
         }
         assertTrue(clientSocket.isConnected())
 
@@ -91,12 +91,12 @@ class SocketManagerTest : ClientServerFactory() {
 
     @Test
     fun reconnectWhenProhibited() = runTest {
-        serverSocket.open({}, { _, _ -> })
+        serverSocket.open("", {}, { _, _ -> })
         mockWebServer.start()
         // should ignore
         clientSocket.reconnect()
 
-        clientSocket.open({}, { _, _ -> })
+        clientSocket.open("", {}, { _, _ -> })
         blockUntilIsConnected()
         // should happen nothing
         clientSocket.reconnect()
@@ -111,9 +111,9 @@ class SocketManagerTest : ClientServerFactory() {
 
     @Test
     fun closeIdempotent() = runTest {
-        serverSocket.open({}, { _, _ -> })
+        serverSocket.open("", {}, { _, _ -> })
         mockWebServer.start()
-        clientSocket.open({}, { _, _ -> })
+        clientSocket.open("", {}, { _, _ -> })
         blockUntilIsConnected()
 
         val serverReceived = mutableListOf<SocketMessage>()
@@ -133,11 +133,11 @@ class SocketManagerTest : ClientServerFactory() {
 
     @Test
     fun disconnect() = runTest {
-        serverSocket.open({}, { _, _ -> })
+        serverSocket.open("", {}, { _, _ -> })
         mockWebServer.start()
         val serverReceived = mutableListOf<SocketMessage>()
         serverSocket.subscribeToAll { serverReceived.add(it) }
-        clientSocket.open({}, { _, _ -> })
+        clientSocket.open("", {}, { _, _ -> })
         blockUntilIsConnected()
 
         // publish works
@@ -167,7 +167,7 @@ class SocketManagerTest : ClientServerFactory() {
 
     @Test
     fun subscribeToAll() = runTest {
-        serverSocket.open({}, { _, _ -> })
+        serverSocket.open("", {}, { _, _ -> })
         mockWebServer.start()
         val clientReceived = mutableListOf<SocketMessage>()
 
@@ -175,7 +175,7 @@ class SocketManagerTest : ClientServerFactory() {
         clientSocket.subscribeToAll { clientReceived.add(it) }
 
         // should work
-        clientSocket.open({}, { _, _ -> })
+        clientSocket.open("", {}, { _, _ -> })
         clientSocket.subscribeToAll { clientReceived.add(it) }
         blockUntilIsConnected()
         serverSocket.publish(FakeSocketMessage.PubEmptyPayload, queueIfDisconnected = false)
@@ -192,14 +192,14 @@ class SocketManagerTest : ClientServerFactory() {
 
     @Test
     fun unsubscribeFromAll() = runTest {
-        serverSocket.open({}, { _, _ -> })
+        serverSocket.open("", {}, { _, _ -> })
         mockWebServer.start()
         val clientReceived = mutableListOf<SocketMessage>()
         // should ignore
         clientSocket.unsubscribeFromAll()
 
         // should work
-        clientSocket.open({}, { _, _ -> })
+        clientSocket.open("", {}, { _, _ -> })
         clientSocket.subscribeToAll { clientReceived.add(it) }
         blockUntilIsConnected()
         serverSocket.publish(FakeSocketMessage.PubEmptyPayload, queueIfDisconnected = false)
@@ -221,7 +221,7 @@ class SocketManagerTest : ClientServerFactory() {
 
     @Test
     fun publishWhenProhibited() = runTest {
-        serverSocket.open({}, { _, _ -> })
+        serverSocket.open("", {}, { _, _ -> })
         mockWebServer.start()
         val serverReceived = mutableListOf<SocketMessage>()
         serverSocket.subscribeToAll { serverReceived.add(it) }
@@ -231,7 +231,7 @@ class SocketManagerTest : ClientServerFactory() {
         delay(1_000)
         assertTrue(serverReceived.isEmpty())
 
-        clientSocket.open({}, { _, _ -> })
+        clientSocket.open("", {}, { _, _ -> })
         blockUntilIsConnected()
         // should work
         clientSocket.publish(FakeSocketMessage.PubEmptyPayload, queueIfDisconnected = false)
@@ -252,9 +252,9 @@ class SocketManagerTest : ClientServerFactory() {
 
     @Test
     fun publishAndSubscribe() = runTest {
-        serverSocket.open({}, { _, _ -> })
+        serverSocket.open("", {}, { _, _ -> })
         mockWebServer.start()
-        clientSocket.open({}, { _, _ -> })
+        clientSocket.open("", {}, { _, _ -> })
         blockUntilIsConnected()
 
         val serverReceived = mutableListOf<SocketMessage>()
@@ -285,9 +285,9 @@ class SocketManagerTest : ClientServerFactory() {
 
     @Test
     fun publishAndSubscribeQueued() = runTest {
-        serverSocket.open({}, { _, _ -> })
+        serverSocket.open("", {}, { _, _ -> })
         mockWebServer.start()
-        clientSocket.open({}, { _, _ -> })
+        clientSocket.open("", {}, { _, _ -> })
         val serverReceived = mutableListOf<SocketMessage>()
         serverSocket.subscribeToAll { serverReceived.add(it) }
         blockUntilIsConnected()
@@ -314,9 +314,9 @@ class SocketManagerTest : ClientServerFactory() {
 
     @Test
     fun reuseSocketAfterClosing() = runTest {
-        serverSocket.open({}, { _, _ -> })
+        serverSocket.open("", {}, { _, _ -> })
         mockWebServer.start()
-        clientSocket.open({}, { _, _ -> })
+        clientSocket.open("", {}, { _, _ -> })
         blockUntilIsConnected()
 
         clientSocket.close()
@@ -325,9 +325,9 @@ class SocketManagerTest : ClientServerFactory() {
         blockUntilServerNotConnected()
 
         // try to reuse
-        serverSocket.open({}, { _, _ -> })
+        serverSocket.open("", {}, { _, _ -> })
         mockWebServer.start()
-        clientSocket.open({}, { _, _ -> })
+        clientSocket.open("", {}, { _, _ -> })
         blockUntilIsConnected()
     }
 

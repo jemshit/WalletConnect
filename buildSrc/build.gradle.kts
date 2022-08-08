@@ -11,7 +11,7 @@ repositories {
 
 dependencies {
     // Also exists in ProjectBuildPlugins
-    implementation("com.android.tools.build:gradle:7.2.1")
+    implementation("com.android.tools.build:gradle:7.2.2")
     // Also exists in ProjectDependencies.kotlinVersion
     implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:1.6.21")
 }

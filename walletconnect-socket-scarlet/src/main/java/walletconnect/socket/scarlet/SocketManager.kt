@@ -26,7 +26,7 @@ import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
 import java.util.concurrent.locks.ReentrantLock
 
-class SocketManager(private val socketServiceFactory: (LifecycleRegistry) -> SocketService,
+class SocketManager(private val socketServiceFactory: (String, LifecycleRegistry) -> SocketService,
                     private val gson: Gson,
                     private val dispatcherProvider: DispatcherProvider,
                     private val logger: Logger = EmptyLogger,
@@ -64,7 +64,8 @@ class SocketManager(private val socketServiceFactory: (LifecycleRegistry) -> Soc
 
     // region Connection
     // Idempotent
-    override fun open(connectionListener: (SocketConnectionState) -> Unit,
+    override fun open(url: String,
+                      connectionListener: (SocketConnectionState) -> Unit,
                       errorListener: (Failure, Boolean) -> Unit,
                       messageListener: ((SocketMessage) -> Unit)?) {
         if (initialized.get()) {
@@ -80,7 +81,7 @@ class SocketManager(private val socketServiceFactory: (LifecycleRegistry) -> Soc
         logger.info(LogTag, "open()")
 
         this.lifecycleRegistry = LifecycleRegistry(0L)
-        this.socketService = socketServiceFactory(lifecycleRegistry)
+        this.socketService = socketServiceFactory(url, lifecycleRegistry)
         this.coroutineScope = CoroutineScope(dispatcherProvider.io() + SupervisorJob())
         this.connectionListener = connectionListener
         this.errorListener = errorListener

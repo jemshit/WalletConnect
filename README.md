@@ -52,7 +52,7 @@ implementation("com.jemshit.walletconnect:walletconnect-store-prefs:x.y.z")
 You can provide your own implementation
 of [SessionStore](walletconnect-core/src/main/java/walletconnect/core/session_state/SessionStore.kt)
 
-**5. Other implementations**
+**5. Other**
 
 - Provide [Logger](walletconnect-core/src/main/java/walletconnect/core/util/Logger.kt)
     - Default
@@ -65,6 +65,12 @@ of [SessionStore](walletconnect-core/src/main/java/walletconnect/core/session_st
     - Android
       sample: [AndroidDispatcherProvider](sample/src/main/java/walletconnect/sample/impl/AndroidDispatcherProvider.kt)
 
+**6. To provide your own implementations**
+
+```kotlin
+implementation("com.jemshit.walletconnect:walletconnect-core:x.y.z")
+```
+
 ### Usage
 
 Make sure to **check Documentation** of Functions & Models. They contain helpful information.
@@ -76,7 +82,7 @@ Make sure to **check Documentation** of Functions & Models. They contain helpful
 fun createDApp(sessionStoreName: String)
         : DApp {
     return DAppManager(
-            socketFactory = { url -> createSocket(url) },
+            socket = createSocket(),
             sessionStore = createSessionStore(sessionStoreName),
             jsonAdapter = createJsonAdapter(),
             dispatcherProvider,
@@ -87,7 +93,7 @@ fun createDApp(sessionStoreName: String)
 fun createWallet(sessionStoreName: String)
         : Wallet {
     return WalletManager(
-            socketFactory = { url -> createSocket(url) },
+            socket = createSocket(),
             sessionStore = createSessionStore(sessionStoreName),
             jsonAdapter = createJsonAdapter(),
             dispatcherProvider,
@@ -135,7 +141,7 @@ fun createSocketService(url: String,
     return scarlet.create(SocketService::class.java)
 }
 
-fun createSocket(url: String)
+fun createSocket()
         : Socket {
     val gson = GsonBuilder()
             .registerTypeAdapter(SocketMessageType::class.java, SocketMessageTypeAdapter())
@@ -143,7 +149,7 @@ fun createSocket(url: String)
             .create()
 
     return SocketManager(
-            socketServiceFactory = { lifecycleRegistry -> createSocketService(url, lifecycleRegistry) },
+            socketServiceFactory = { url, lifecycleRegistry -> createSocketService(url, lifecycleRegistry) },
             gson,
             dispatcherProvider,
             logger
@@ -618,6 +624,7 @@ Example in [sample](sample/proguard-rules.pro)
 - Unit tests for [DAppManager](walletconnect/src/main/java/walletconnect/DAppManager.kt)
   , [WalletManager](walletconnect/src/main/java/walletconnect/WalletManager.kt)
   , [WalletConnectCore](walletconnect/src/main/java/walletconnect/WalletConnectCore.kt)
+- Get rid of [DispatcherProvider](walletconnect-core/src/main/java/walletconnect/core/util/DispatcherProvider.kt)
 - [walletconnect-requests](walletconnect-requests/src/main/java/walletconnect/requests) module for custom
   request/response models
 - Maybe `walletconnect-store-room` DB implementation

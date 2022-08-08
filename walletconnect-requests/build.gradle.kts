@@ -2,6 +2,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     id("kotlin")
+    id("org.jetbrains.dokka")
 }
 
 java {
@@ -16,8 +17,9 @@ tasks.withType<KotlinCompile>().all {
 }
 
 dependencies {
-
     api(project(":walletconnect-core"))
+    dokkaJavadocPlugin(Dependencies.kotlinDokka)
+
     implementation(Dependencies.kotlinJDK8)
 
     testImplementation(Dependencies.junit)

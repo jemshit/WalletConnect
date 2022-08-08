@@ -3,6 +3,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     id("kotlin")
     id("maven-publish")
+    id("org.jetbrains.dokka")
 }
 
 java {
@@ -20,7 +21,7 @@ publishing {
     publications {
         create<MavenPublication>("maven"){
             groupId = "com.jemshit.walletconnect"
-            artifactId = "walletconnect-adapter-gson"
+            artifactId = "walletconnect-adapter-moshi"
             version = "0.0.1"
 
             from(components["java"])
@@ -31,6 +32,7 @@ publishing {
 dependencies {
     api(project(":walletconnect-core"))
     testImplementation(testFixtures(project(":walletconnect-core")))
+    dokkaJavadocPlugin(Dependencies.kotlinDokka)
 
     implementation(Dependencies.kotlinJDK8)
     api(Dependencies.moshi)

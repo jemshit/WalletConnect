@@ -27,12 +27,14 @@ interface Socket {
      * - Instance is reusable after [close]
      * - [open], [reconnect], [disconnect], [close] method calls are synchronized.
      *
+     * @param[url] URL
      * @param[connectionListener] if same state is emitted consecutively, this is called only once
      * @param[errorListener] is called for any error on any method call.
      *                       Boolean indicates isFatal, if so, [close] is called internally.
      * @param[messageListener] if specified, [subscribeToAll] is called internally
      */
-    fun open(connectionListener: (SocketConnectionState) -> Unit,
+    fun open(url: String,
+             connectionListener: (SocketConnectionState) -> Unit,
              errorListener: (Failure, Boolean) -> Unit,
              messageListener: ((SocketMessage) -> Unit)? = null)
 

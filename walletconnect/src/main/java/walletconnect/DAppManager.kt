@@ -30,12 +30,12 @@ import walletconnect.core.util.Logger
 import walletconnect.core.util.logger_impl.EmptyLogger
 import java.lang.reflect.Type
 
-class DAppManager(socketFactory: (String) -> Socket,
+class DAppManager(socket: Socket,
                   sessionStore: SessionStore,
                   jsonAdapter: JsonAdapter,
                   dispatcherProvider: DispatcherProvider,
                   logger: Logger = EmptyLogger)
-    : DApp, WalletConnectCore(isDApp = true, socketFactory, sessionStore, jsonAdapter, dispatcherProvider, logger) {
+    : DApp, WalletConnectCore(isDApp = true, socket, sessionStore, jsonAdapter, dispatcherProvider, logger) {
 
     private val LogTag = "DApp"
 
