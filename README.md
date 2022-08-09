@@ -498,6 +498,7 @@ Image 1:
 4. Callbacks
 5. Action Buttons (can scroll horizontally)
 6. Session List (image 2)
+7. Color changes depending on Socket connection state (orange/green/red)
 
 Image 2:
 

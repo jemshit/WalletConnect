@@ -7,6 +7,10 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- Readme
+
 ## [0.6.0] - 2022-08-08
 
 ### Changed
@@ -36,7 +40,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Pure kotlin modules
 - Unit tests (except `:walletconnect` module)
 
-[Unreleased]: https://github.com/jemshit/walletconnect/compare/master...develop
+[Unreleased]: https://github.com/jemshit/walletconnect/compare/main...develop
 
 [0.6.0]: https://github.com/jemshit/walletconnect/compare/0.5.0..0.6.0
 
