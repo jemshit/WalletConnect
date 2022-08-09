@@ -505,6 +505,11 @@ Image 2:
 - Click to reconnect to any previous Session
 - Press delete icon to delete any previous Session
 
+Other notes:
+
+- Single unique topic is created per app open (kill & reopen app to change topic)
+- dApp (above half of screen) & wallet (below half of screen) share same topic
+
 ### Changelog & Migration
 
 [CHANGELOG.md](CHANGELOG.md)
