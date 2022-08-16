@@ -103,9 +103,9 @@ class SharedPrefsSessionStore(private val sharedPrefs: SharedPreferences,
     }
 
     override suspend fun getAll()
-            : List<SessionState>? {
+            : Set<SessionState>? {
         if (cacheReady.get()) {
-            return cachedStates.values.toList()
+            return cachedStates.values.toSet()
         }
 
         withContext(dispatcherProvider.io()) {
@@ -117,7 +117,7 @@ class SharedPrefsSessionStore(private val sharedPrefs: SharedPreferences,
         }
 
         logger.debug(LogTag, "<- getAll(${cachedStates.size}) wait.ended")
-        return cachedStates.values.toList()
+        return cachedStates.values.toSet()
     }
 
     override fun getAllAsFlow()

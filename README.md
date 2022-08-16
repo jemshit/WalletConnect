@@ -465,7 +465,7 @@ val sessionStore = return FileSessionStore(
 
 // one-time list
 coroutineScope.launch(dispatcherProvider.io()) {
-    val sessionList: List? = sessionStore.getAll()
+    val sessions: Set? = sessionStore.getAll()
 }
 
 // list as hot flow

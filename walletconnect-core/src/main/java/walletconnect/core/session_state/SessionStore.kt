@@ -26,10 +26,10 @@ interface SessionStore {
      * Suspends if Session restore is in progress.
      * Otherwise returns all [SessionState]s from in-memory cache (Map).
      *
-     * @return If no data, either null or [emptyList] is returned
+     * @return If no data, either null or [emptySet] is returned
      */
     suspend fun getAll()
-            : List<SessionState>?
+            : Set<SessionState>?
 
     /**
      * Returns hot Flow of Set<[SessionState]>, replays last state.

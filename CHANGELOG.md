@@ -7,9 +7,16 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.6.2] - 2022-16-08
+
+### Changed
+
+- [SessionStore#getAll()](walletconnect-core/src/main/java/walletconnect/core/session_state/SessionStore.kt)
+  returns `Set` instead of `List`, like `getAllAsFlow()`
+
 ## [0.6.1] - 2022-16-08
 
-### Added 
+### Added
 
 - [Cryptography#generateSymmetricKey()](walletconnect-core/src/main/java/walletconnect/core/cryptography/Cryptography.kt)
 
@@ -47,6 +54,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Unit tests (except `:walletconnect` module)
 
 [Unreleased]: https://github.com/jemshit/walletconnect/compare/main...develop
+
+[0.6.2]: https://github.com/jemshit/walletconnect/compare/0.6.1..0.6.2
 
 [0.6.1]: https://github.com/jemshit/walletconnect/compare/0.6.0..0.6.1
 
