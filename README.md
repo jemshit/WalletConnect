@@ -480,6 +480,26 @@ sessionStore.getAllAsFlow()
 
 </details>
 
+<details>
+<summary>Helpers</summary>
+
+[Cryptography.kt](walletconnect-core/src/main/java/walletconnect/core/cryptography/Cryptography.kt)
+- encrypt
+- decrypt
+- computeHMAC
+- randomBytes
+- generateSymmetricKey
+
+[HexByteExtensions](walletconnect-core/src/main/java/walletconnect/core/cryptography/HexByteExtensions.kt)
+- String.hexToByteArray
+- String.isHex
+- String.toHex
+- ByteArray.toHex
+- Long.toHex
+- Int.toHex
+
+</details>
+
 ### Sample
 
 [Sample Android App](sample)

@@ -10,7 +10,9 @@ import walletconnect.core.session.model.EncryptedPayload
 import java.security.SecureRandom
 import java.util.*
 import javax.crypto.Cipher
+import javax.crypto.KeyGenerator
 import javax.crypto.Mac
+import javax.crypto.SecretKey
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
 
@@ -22,7 +24,11 @@ private val IvSize = 16 // bytes
 
 object Cryptography {
 
-    /** @throws [Failure] */
+    /**
+     * Uses "AES/CBC/PKCS5Padding" with 32 byte key, 16 byte IV
+     *
+     * @throws [Failure]
+     */
     fun encrypt(data: ByteArray,
                 symmetricKey: ByteArray)
             : EncryptedPayload {
@@ -53,7 +59,11 @@ object Cryptography {
         }
     }
 
-    /** @throws [Failure] */
+    /**
+     * Uses "AES/CBC/PKCS5Padding" with 32 byte key, 16 byte IV
+     *
+     * @throws [Failure]
+     */
     fun decrypt(payload: EncryptedPayload,
                 symmetricKey: ByteArray)
             : ByteArray {
@@ -108,11 +118,66 @@ object Cryptography {
         }
     }
 
-    private fun randomBytes(size: Int)
+    /**
+     * @param[size] in Bytes
+     */
+    fun randomBytes(size: Int)
             : ByteArray {
         return ByteArray(size).also { bytes ->
             SecureRandom().nextBytes(bytes)
         }
+    }
+
+    /**
+     * Generates random 32 bytes (256bit, 64digit hex) for 'AES' cipher algorithm.
+     * You can use [randomBytes] as fallback if this method throws
+     *
+     * [Source](https://www.baeldung.com/java-secure-aes-key)
+     *
+     * @throws [Failure]
+     */
+    fun generateSymmetricKey()
+            : ByteArray {
+        val keyGenerator = try {
+            KeyGenerator.getInstance("AES")
+        } catch (error: Exception) {
+            // if no Provider supports a KeyGeneratorSpi implementation for the specified algorithm
+            throw Failure(type = FailureType.InvalidSymmetricKey,
+                          message = error.message,
+                          cause = error)
+        }
+
+        try {
+            keyGenerator.init(KeySize * 8)
+        } catch (error: Exception) {
+            // if the key-size is wrong or not supported.
+            throw Failure(type = FailureType.InvalidSymmetricKey,
+                          message = error.message,
+                          cause = error)
+        }
+
+        val secretKey: SecretKey = try {
+            keyGenerator.generateKey()
+        } catch (error: Exception) {
+            throw Failure(type = FailureType.InvalidSymmetricKey,
+                          message = error.message,
+                          cause = error)
+        }
+
+        val key = try {
+            secretKey.encoded!!
+        } catch (error: Exception) {
+            throw Failure(type = FailureType.InvalidSymmetricKey,
+                          message = error.message,
+                          cause = error)
+        }
+
+        if (key.size != KeySize) {
+            throw Failure(type = FailureType.InvalidSymmetricKey,
+                          message = "Generated Key has invalid size(${key.size})")
+        }
+
+        return key
     }
 
 }

@@ -7,6 +7,12 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.6.1] - 2022-16-08
+
+### Added 
+
+- [Cryptography#generateSymmetricKey()](walletconnect-core/src/main/java/walletconnect/core/cryptography/Cryptography.kt)
+
 ### Changed
 
 - Readme
@@ -41,6 +47,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Unit tests (except `:walletconnect` module)
 
 [Unreleased]: https://github.com/jemshit/walletconnect/compare/main...develop
+
+[0.6.1]: https://github.com/jemshit/walletconnect/compare/0.6.0..0.6.1
 
 [0.6.0]: https://github.com/jemshit/walletconnect/compare/0.5.0..0.6.0
 

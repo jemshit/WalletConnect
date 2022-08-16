@@ -45,4 +45,63 @@ class CryptographyTest {
         assertArrayEquals(expected, decrypted)
     }
 
+    @Test
+    fun randomBytes_size() {
+        val expected = 7
+        assertEquals(expected, Cryptography.randomBytes(expected).size)
+
+        val expected2 = 16
+        assertEquals(expected2, Cryptography.randomBytes(expected2).size)
+
+        val expected3 = 32
+        assertEquals(expected3, Cryptography.randomBytes(expected3).size)
+
+        val expected4 = 64
+        assertEquals(expected4, Cryptography.randomBytes(expected4).size)
+    }
+
+    @Test
+    fun randomBytes_shouldWorkWithEncryptDecrypt() {
+        for (counter in 1 until 1_000) {
+            val expected =
+                "{\"id\":1554098597199736,\"jsonrpc\":\"2.0\",\"method\":\"wc_sessionUpdate\",\"params\":[{\"approved\":false,\"chainId\":null,\"accounts\":null}]}"
+                        .toByteArray(Charsets.UTF_8)
+            val key = Cryptography.randomBytes(size = 32)
+            val payload = Cryptography.encrypt(data = expected,
+                                               symmetricKey = key)
+            val decrypted = Cryptography.decrypt(payload,
+                                                 key)
+
+            assertArrayEquals(expected, decrypted)
+        }
+    }
+
+    @Test
+    fun generateSymmetricKey_size() {
+        assertEquals(32, Cryptography.generateSymmetricKey().size)
+    }
+
+    @Test
+    fun generateSymmetricKey_shouldntThrow() {
+        for (counter in 1 until 10_000) {
+            assertEquals(32, Cryptography.generateSymmetricKey().size)
+        }
+    }
+
+    @Test
+    fun generateSymmetricKey_shouldWorkWithEncryptDecrypt() {
+        for (counter in 1 until 1_000) {
+            val expected =
+                "{\"id\":1554098597199736,\"jsonrpc\":\"2.0\",\"method\":\"wc_sessionUpdate\",\"params\":[{\"approved\":false,\"chainId\":null,\"accounts\":null}]}"
+                        .toByteArray(Charsets.UTF_8)
+            val key = Cryptography.generateSymmetricKey()
+            val payload = Cryptography.encrypt(data = expected,
+                                               symmetricKey = key)
+            val decrypted = Cryptography.decrypt(payload,
+                                                 key)
+
+            assertArrayEquals(expected, decrypted)
+        }
+    }
+
 }
