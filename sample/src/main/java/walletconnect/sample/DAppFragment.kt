@@ -32,6 +32,8 @@ import walletconnect.core.session.callback.*
 import walletconnect.core.session.model.InitialSessionState
 import walletconnect.core.session.model.json_rpc.EthRpcMethod
 import walletconnect.core.session_state.model.PeerMeta
+import walletconnect.requests.CustomRpcMethods
+import walletconnect.requests.wallet.SwitchChain
 import walletconnect.sample.bnb_provider.BnbViewModel
 import walletconnect.sample.databinding.DappFragmentBinding
 import walletconnect.sample.sign.SignFragment
@@ -127,6 +129,16 @@ class DAppFragment : BaseFragment() {
         binding.buttonSendSessionRequest.setOnClickListener {
             dApp.sendSessionRequest(null)
         }
+        binding.buttonSwitchChain.setOnClickListener {
+            viewLifecycleOwner.lifecycleScope.launch(dispatcherProvider.io()) {
+                if (!approvedAddress.isNullOrBlank()) {
+                    dApp.sendRequest(CustomRpcMethods.SwitchEthChain,
+                                     data = listOf(SwitchChain("0x" + 56.toHex())),
+                                     itemType = SwitchChain::class.java)
+                }
+            }
+        }
+
         binding.buttonSendSignRequest.setOnClickListener {
             if (!approvedAddress.isNullOrBlank()) {
                 SignFragment

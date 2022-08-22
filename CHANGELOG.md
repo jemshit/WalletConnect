@@ -7,6 +7,20 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.6.3] - 2022-22-08
+
+### Added
+
+- [walletconnect-requests](walletconnect-requests) module
+  , [SwitchEthChain](walletconnect-requests/src/main/java/walletconnect/requests/wallet/SwitchEthChain.kt)
+  , [CustomRpcMethods](walletconnect-requests/src/main/java/walletconnect/requests/CustomRpcMethods.kt)
+- `SwitchEthChain` button in sample app
+- Proguard rule in Readme for `walletconnect-requests` module
+
+### Changed
+
+- [Wallet.approveRequest](walletconnect-core/src/main/java/walletconnect/core/Wallet.kt) `result:Any` -> `result:Any?`
+
 ## [0.6.2] - 2022-16-08
 
 ### Changed
@@ -54,6 +68,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Unit tests (except `:walletconnect` module)
 
 [Unreleased]: https://github.com/jemshit/walletconnect/compare/main...develop
+
+[0.6.3]: https://github.com/jemshit/walletconnect/compare/0.6.2..0.6.3
 
 [0.6.2]: https://github.com/jemshit/walletconnect/compare/0.6.1..0.6.2
 

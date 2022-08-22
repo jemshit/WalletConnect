@@ -318,7 +318,7 @@ class WalletManager(socket: Socket,
 
     // region Custom Request/Response
     override suspend fun approveRequest(messageId: Long,
-                                        result: Any,
+                                        result: Any?,
                                         resultType: Type)
             : Long? {
         if (!initialized.get()) {

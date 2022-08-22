@@ -43,7 +43,7 @@ interface Wallet : SessionLifecycle {
      * @return [messageId] or null if error
      */
     suspend fun approveRequest(messageId: Long,
-                               result: Any,
+                               result: Any?,
                                resultType: Type)
             : Long?
 

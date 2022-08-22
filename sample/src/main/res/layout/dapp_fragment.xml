@@ -206,6 +206,14 @@
                 android:text="Session Request" />
 
             <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonSwitchChain"
+                style="@style/ButtonStyleAccent"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/button"
+                android:layout_marginStart="@dimen/margin"
+                android:text="Switch Eth Chain" />
+
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/buttonSendSignRequest"
                 style="@style/ButtonStyleAccent"
                 android:layout_width="wrap_content"

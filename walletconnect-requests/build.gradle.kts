@@ -2,6 +2,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     id("kotlin")
+    id("maven-publish")
     id("org.jetbrains.dokka")
 }
 
@@ -13,6 +14,18 @@ java {
 tasks.withType<KotlinCompile>().all {
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_11.toString()
+    }
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("maven"){
+            groupId = "com.jemshit.walletconnect"
+            artifactId = "walletconnect-requests"
+            version = "0.0.1"
+
+            from(components["java"])
+        }
     }
 }
 

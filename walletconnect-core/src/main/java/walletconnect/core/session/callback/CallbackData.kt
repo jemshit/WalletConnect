@@ -133,7 +133,7 @@ sealed interface RequestCallback
      * - called if payload is not JsonRpcRequest, JsonRpcResponse, JsonRpcError
      */
     data class CustomResponse(val messageId: Long,
-                              val data: Any)
+                              val data: Any?)
         : RequestCallback
 
     /** Called for all types of JsonRpcMethods in case of rejected */

@@ -52,7 +52,13 @@ implementation("com.jemshit.walletconnect:walletconnect-store-prefs:x.y.z")
 You can provide your own implementation
 of [SessionStore](walletconnect-core/src/main/java/walletconnect/core/session_state/SessionStore.kt)
 
-**5. Other**
+**5. Custom Requests**
+
+```kotlin
+implementation("com.jemshit.walletconnect:walletconnect-requests:x.y.z")
+```
+
+**6. Other**
 
 - Provide [Logger](walletconnect-core/src/main/java/walletconnect/core/util/Logger.kt)
     - Default
@@ -65,7 +71,7 @@ of [SessionStore](walletconnect-core/src/main/java/walletconnect/core/session_st
     - Android
       sample: [AndroidDispatcherProvider](sample/src/main/java/walletconnect/sample/impl/AndroidDispatcherProvider.kt)
 
-**6. To provide your own implementations**
+**7. To provide your own implementations**
 
 ```kotlin
 implementation("com.jemshit.walletconnect:walletconnect-core:x.y.z")
@@ -559,6 +565,11 @@ Example in [sample](sample/proguard-rules.pro)
     <fields>;
 }
 -keepclassmembers class walletconnect.core.socket.model.** {
+    public synthetic <methods>;
+    <methods>;
+    <fields>;
+}
+-keepclassmembers class walletconnect.requests.** {
     public synthetic <methods>;
     <methods>;
     <fields>;
