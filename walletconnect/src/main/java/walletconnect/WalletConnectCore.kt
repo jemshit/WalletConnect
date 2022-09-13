@@ -22,6 +22,7 @@ import walletconnect.core.session.callback.SessionCallback
 import walletconnect.core.session.callback.SocketCallback
 import walletconnect.core.session.model.EncryptedPayload
 import walletconnect.core.session.model.InitialSessionState
+import walletconnect.core.session.model.SessionUpdate
 import walletconnect.core.session.model.json_rpc.*
 import walletconnect.core.session_state.SessionStore
 import walletconnect.core.session_state.model.SessionState
@@ -156,7 +157,8 @@ abstract class WalletConnectCore(private val isDApp: Boolean,
 
     // region Lifecycle
     override fun openSocket(initialState: InitialSessionState,
-                            callback: ((CallbackData) -> Unit)?) {
+                            callback: ((CallbackData) -> Unit)?,
+                            onOpen: (() -> Unit)?) {
         if (initialized.get()) {
             return
         }
@@ -167,73 +169,78 @@ abstract class WalletConnectCore(private val isDApp: Boolean,
             return
         }
 
-        socketConnectionLock.lock()
-        // double-check. multiple threads can pass initial check and wait in queue for lock
-        if (initialized.get()) {
-            socketConnectionLock.unlock()
-            return
-        }
-        val prevSessionState = runBlocking {
-            // it returns from in-memory cache if [sessionStore] was initialized before
-            sessionStore.get(topic = initialState.connectionParams.topic)
-        }
-        logger.info(LogTag, "#openSocket($initialState)\nprevSessionState=$prevSessionState")
+        Thread {
+            socketConnectionLock.lock()
+            // double-check. multiple threads can pass initial check and wait in queue for lock
+            if (!initialized.get()) {
+                val prevSessionState = runBlocking {
+                    // it returns from in-memory cache if [sessionStore] was initialized before
+                    sessionStore.get(topic = initialState.connectionParams.topic)
+                }
+                logger.info(LogTag, "#openSocket($initialState)\nprevSessionState=$prevSessionState")
 
-        try {
-            this.coroutineScope = CoroutineScope(dispatcherProvider.io() + SupervisorJob())
-            this.initialState = initialState
-            this.sessionCallback = callback // init before [sessionState]
-            this.sessionState = prevSessionState // this uses [sessionCallback]
-            if (prevSessionState != null) {
-                this.sessionApproved.set(true)
-                callback(SessionCallback.SessionRestoredLocally)
-            }
-
-            processIncomingMessageQueue()
-            processOutgoingMessageQueue()
-
-            // set(true) as late as possible, but [subscribeToAllMessages] below checks this
-            initialized.set(true)
-
-            socket.open(
-                    url = initialState.connectionParams.bridgeUrl,
-                    connectionListener = { connectionState ->
-                        when (connectionState) {
-                            SocketConnectionState.Connecting -> {
-                                callback(SocketCallback.SocketConnecting)
-                            }
-                            SocketConnectionState.Connected -> {
-                                callback(SocketCallback.SocketConnected)
-                                subscribeToAllMessages()
-                            }
-                            SocketConnectionState.Disconnected -> {
-                                callback(SocketCallback.SocketDisconnected)
-                                // if disconnected & reconnected, you are not subscribed to topic, myPeerId anymore. resubscribe
-                                subscribedToAllMessages.set(false)
-                            }
-                            SocketConnectionState.Closed -> {
-                                callback(SocketCallback.SocketClosed)
-                                //closeSocketAndSession(notifyPeer = false)
-                            }
-                        }
-                    },
-                    errorListener = { failure, isFatal ->
-                        failureCallback(failure)
-                        if (isFatal) {
-                            // deadlock (because of 'socketConnectionLock') doesn't happen
-                            close(deleteLocal = false,
-                                  deleteRemote = false)
-                        }
-                    },
-                    messageListener = { socketMessage ->
-                        incomingMessageQueue.tryEmit(socketMessage)
+                try {
+                    this.coroutineScope = CoroutineScope(dispatcherProvider.io() + SupervisorJob())
+                    this.initialState = initialState
+                    this.sessionCallback = callback // init before [sessionState]
+                    this.sessionState = prevSessionState // this uses [sessionCallback]
+                    if (prevSessionState != null) {
+                        this.sessionApproved.set(true)
+                        callback(SessionCallback.SessionRestoredLocally)
                     }
-            )
-        } catch (error: Exception) {
-            logger.error(LogTag, error.stackTraceToString())
-        } finally {
-            socketConnectionLock.unlock()
-        }
+
+                    processIncomingMessageQueue()
+                    processOutgoingMessageQueue()
+
+                    // set(true) as late as possible so other methods do not start to function before [openSocket] is finalized
+                    // but [subscribeToAllMessages] below checks this
+                    initialized.set(true)
+
+                    socket.open(
+                            url = initialState.connectionParams.bridgeUrl,
+                            connectionListener = { connectionState ->
+                                when (connectionState) {
+                                    SocketConnectionState.Connecting -> {
+                                        callback(SocketCallback.SocketConnecting)
+                                    }
+                                    SocketConnectionState.Connected -> {
+                                        callback(SocketCallback.SocketConnected)
+                                        subscribeToAllMessages()
+                                    }
+                                    SocketConnectionState.Disconnected -> {
+                                        callback(SocketCallback.SocketDisconnected)
+                                        // if disconnected & reconnected, you are not subscribed to topic, myPeerId anymore. resubscribe
+                                        subscribedToAllMessages.set(false)
+                                    }
+                                    SocketConnectionState.Closed -> {
+                                        callback(SocketCallback.SocketClosed)
+                                        //closeSocketAndSession(notifyPeer = false)
+                                    }
+                                }
+                            },
+                            errorListener = { failure, isFatal ->
+                                failureCallback(failure)
+                                if (isFatal) {
+                                    // deadlock (because of 'socketConnectionLock') doesn't happen
+                                    close(deleteLocal = false,
+                                          deleteRemote = false)
+                                }
+                            },
+                            messageListener = { socketMessage ->
+                                incomingMessageQueue.tryEmit(socketMessage)
+                            }
+                    )
+                } catch (error: Exception) {
+                    logger.error(LogTag, error.stackTraceToString())
+                } finally {
+                    socketConnectionLock.unlock()
+                    onOpen?.invoke()
+                }
+            } else {
+                socketConnectionLock.unlock()
+                onOpen?.invoke()
+            }
+        }.start()
     }
 
     override fun getInitialSessionState()
@@ -268,8 +275,82 @@ abstract class WalletConnectCore(private val isDApp: Boolean,
         socketConnectionLock.unlock()
     }
 
-    /** calls [updateSession(chainId = null, accounts = null, approved = false)] internally */
-    protected abstract fun deleteSessionInternal()
+    /**
+     * Blocking version of `updateSession(chainId = null, accounts = null, approved = false)`. Only called from [close]
+     */
+    private fun deleteSessionInternal() {
+        val chainId: Int? = null
+        val accounts: List<String>? = null
+        val approved = false
+
+        runBlocking {
+            if (!initialized.get()) {
+                logger.error(LogTag, "#deleteSessionInternal(): !initialized")
+                return@runBlocking
+            }
+            if (!sessionApproved.get()) {
+                logger.warning(LogTag, "#deleteSessionInternal(): session wasn't approved before")
+                failureCallback(Failure(type = FailureType.SessionError,
+                                        message = "#deleteSessionInternal(): session wasn't approved before"))
+                return@runBlocking
+            }
+            val currentSessionState = sessionState?.copy()
+            if (currentSessionState == null) {
+                // [sessionState] was updated on sessionRequest, it shouldn't be null
+                logger.warning(LogTag, "#deleteSessionInternal(): sessionState is null")
+                return@runBlocking
+            }
+
+            logger.info(LogTag, "#deleteSessionInternal()")
+
+            val model = SessionUpdate(approved = approved,
+                                      chainId = chainId,
+                                      accounts = accounts)
+            val messageId = generateMessageId()
+            val payload = JsonRpcRequest(id = messageId,
+                                         method = SessionRpcMethod.Update,
+                                         params = listOf(model))
+
+            val payloadAsJson = serializePayload(payload,
+                                                 getRequestType(SessionUpdate::class.java))
+                                ?: return@runBlocking
+
+            val encryptedPayload = encryptPayload(payloadAsJson)
+                                   ?: return@runBlocking
+
+            val message = SocketMessage(topic = currentSessionState.remotePeerId,
+                                        type = SocketMessageType.Pub,
+                                        payload = encryptedPayload)
+            publish(message,
+                    queueIfDisconnected = true)
+
+            // update [sessionState] of Wallet. remotePeerId, remotePeerMeta was updated on sessionRequest
+            sessionState = currentSessionState.copy(
+                    chainId = chainId,
+                    accounts = accounts,
+
+                    updatedAt = System.currentTimeMillis()
+            )
+            sessionApproved.set(approved)
+
+            if (approved) {
+                if (!isDApp) {
+                    sessionStore.persist(initialState.connectionParams.topic,
+                                         sessionState!!)
+
+                    // notify wallet
+                    callback(SessionCallback.SessionUpdated(
+                            messageId = messageId,
+                            chainId = chainId,
+                            accounts = accounts
+                    ))
+                }
+            } else {
+                // dApp || wallet
+                callback(SessionCallback.SessionDeleted(byMe = true))
+            }
+        }
+    }
 
     override fun close(deleteLocal: Boolean,
                        deleteRemote: Boolean,
@@ -307,7 +388,8 @@ abstract class WalletConnectCore(private val isDApp: Boolean,
                     // wait little more (messages are in queue of [Socket] now)
                     Thread.sleep(500)
 
-                    // set(false) asap, but [updateSessionRequest] above checks this
+                    // set(false) asap, because other method calls should return immediately if [close] is in progress
+                    // but [deleteSessionInternal] & [encryptPayloadAndPublish] uses this
                     initialized.set(false)
 
                     // stop actions

@@ -52,7 +52,7 @@ implementation("com.jemshit.walletconnect:walletconnect-store-prefs:x.y.z")
 You can provide your own implementation
 of [SessionStore](walletconnect-core/src/main/java/walletconnect/core/session_state/SessionStore.kt)
 
-**5. Custom Requests**
+**5. Custom Request Models**
 
 ```kotlin
 implementation("com.jemshit.walletconnect:walletconnect-requests:x.y.z")
@@ -71,7 +71,7 @@ implementation("com.jemshit.walletconnect:walletconnect-requests:x.y.z")
     - Android
       sample: [AndroidDispatcherProvider](sample/src/main/java/walletconnect/sample/impl/AndroidDispatcherProvider.kt)
 
-**7. To provide your own implementations**
+**7. Base module to provide your own implementations**
 
 ```kotlin
 implementation("com.jemshit.walletconnect:walletconnect-core:x.y.z")
@@ -217,7 +217,7 @@ val connectionParams = ConnectionParams(
         // "https://bridge.walletconnect.org" -> when one peer deletes session while other peer is disconnected, 
         //     other peer never gets that message even after connecting. Also pings in socket is not supported
         bridgeUrl = "https://safe-walletconnect.gnosis.io",
-        symmetricKey = "..." // 32 byte (64 char) encryption/decryption key
+        symmetricKey = "..." // 32 byte (64 char) encryption/decryption key. You can use `Cryptography.generateSymmetricKey().toHex()`
 )
 
 val initialSessionState = InitialSessionState(
@@ -234,10 +234,12 @@ val initialSessionState = InitialSessionState(
 val dApp: DApp = createDApp(sessionStoreName = "...")
 
 // Open Socket
-coroutineScope.launch(dispatcherProvider.io()) {
-    // openSocket has blocking calls inside, running outside UI thread might be good idea
-    dApp.openSocket(initialSessionState, callback = ::onSessionCallback)
-}
+dApp.openSocket(initialSessionState, 
+                callback = ::onSessionCallback, 
+                onOpen = {
+                    // sendSessionRequest() etc...
+                })
+
 
 // Close Socket
 dApp.close(deleteLocal = false, deleteRemote = false)
@@ -383,10 +385,9 @@ val initialSessionState = InitialSessionState(
 val wallet: Wallet = createWallet(sessionStoreName = "...")
 
 // Open Socket
-coroutineScope.launch(dispatcherProvider.io()) {
-    // openSocket has blocking calls inside, running outside UI thread might be good idea
-    wallet.openSocket(initialSessionState, callback = ::onSessionCallback)
-}
+wallet.openSocket(initialSessionState,
+                  callback = ::onSessionCallback,
+                  onOpen = {})
 
 // Close Socket
 wallet.close(deleteLocal = false, deleteRemote = false)

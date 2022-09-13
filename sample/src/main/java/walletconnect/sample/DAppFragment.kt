@@ -112,10 +112,9 @@ class DAppFragment : BaseFragment() {
             binding.textConsole.text = ""
         }
         binding.buttonOpen.setOnClickListener {
-            viewLifecycleOwner.lifecycleScope.launch(dispatcherProvider.io()) {
-                dApp.openSocket(initialSessionState,
-                                callback = ::onSessionCallback)
-            }
+            dApp.openSocket(initialSessionState,
+                            callback = ::onSessionCallback,
+                            onOpen = null)
         }
         binding.buttonClose.setOnClickListener {
             dApp.close(deleteLocal = false,

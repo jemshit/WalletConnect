@@ -5,7 +5,6 @@
 package walletconnect
 
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import walletconnect.core.DApp
 import walletconnect.core.Failure
 import walletconnect.core.FailureType
@@ -80,68 +79,6 @@ class DAppManager(socket: Socket,
                     initialState.myPeerId,
                     initialState.myPeerMeta
             ))
-        }
-    }
-
-    /** Blocking version of 'updateSession' with approved=false. Only called from [close] */
-    override fun deleteSessionInternal() {
-        val chainId: Int? = null
-        val accounts: List<String>? = null
-        val approved = false
-
-        runBlocking {
-            if (!initialized.get()) {
-                logger.error(LogTag, "#deleteSessionInternal(): !initialized")
-                return@runBlocking
-            }
-            if (!sessionApproved.get()) {
-                logger.warning(LogTag, "#deleteSessionInternal(): session wasn't approved before")
-                failureCallback(Failure(type = FailureType.SessionError,
-                                        message = "#deleteSessionInternal(): session wasn't approved before"))
-                return@runBlocking
-            }
-            val currentSessionState = sessionState?.copy()
-            if (currentSessionState == null) {
-                // [sessionState] was updated on sessionRequest, it shouldn't be null
-                logger.warning(LogTag, "#deleteSessionInternal(): sessionState is null")
-                return@runBlocking
-            }
-
-            logger.info(LogTag, "#deleteSessionInternal()")
-
-            val model = SessionUpdate(approved = approved,
-                                      chainId = chainId,
-                                      accounts = accounts)
-            val messageId = generateMessageId()
-            val payload = JsonRpcRequest(id = messageId,
-                                         method = SessionRpcMethod.Update,
-                                         params = listOf(model))
-
-            val payloadAsJson = serializePayload(payload,
-                                                 getRequestType(SessionUpdate::class.java))
-                                ?: return@runBlocking
-
-            val encryptedPayload = encryptPayload(payloadAsJson)
-                                   ?: return@runBlocking
-
-            val message = SocketMessage(topic = currentSessionState.remotePeerId,
-                                        type = SocketMessageType.Pub,
-                                        payload = encryptedPayload)
-            publish(message,
-                    queueIfDisconnected = true)
-
-            // update [sessionState] of Wallet. remotePeerId, remotePeerMeta was updated on sessionRequest
-            sessionState = currentSessionState.copy(
-                    chainId = chainId,
-                    accounts = accounts,
-
-                    updatedAt = System.currentTimeMillis()
-            )
-            sessionApproved.set(approved)
-
-            if (!approved) {
-                callback(SessionCallback.SessionDeleted(byMe = true))
-            }
         }
     }
     // endregion

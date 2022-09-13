@@ -7,6 +7,13 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- [SessionLifecycle#openSocket](walletconnect-core/src/main/java/walletconnect/core/session/SessionLifecycle.kt) method
+  is asynchronous now, it has additional `onOpen` parameter
+- [WalletConnectCore#deleteSessionInternal](walletconnect/src/main/java/walletconnect/WalletConnectCore.kt) method
+  is `private` now
+
 ## [0.6.3] - 2022-22-08
 
 ### Added

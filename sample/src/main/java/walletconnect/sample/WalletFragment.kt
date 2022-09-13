@@ -96,10 +96,9 @@ class WalletFragment : BaseFragment() {
             binding.textConsole.text = ""
         }
         binding.buttonOpen.setOnClickListener {
-            viewLifecycleOwner.lifecycleScope.launch(dispatcherProvider.io()) {
-                wallet.openSocket(initialSessionState,
-                                  callback = ::onSessionCallback)
-            }
+            wallet.openSocket(initialSessionState,
+                              callback = ::onSessionCallback,
+                              onOpen = null)
         }
         binding.buttonClose.setOnClickListener {
             wallet.close(deleteLocal = false,
