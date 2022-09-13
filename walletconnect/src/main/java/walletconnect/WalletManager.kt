@@ -244,119 +244,117 @@ class WalletManager(socket: Socket,
     // endregion
 
     // region Custom Request/Response
-    override suspend fun approveRequest(messageId: Long,
-                                        result: Any?,
-                                        resultType: Type)
-            : Long? {
+    override fun approveRequest(messageId: Long,
+                                result: Any?,
+                                resultType: Type) {
         if (!initialized.get()) {
             logger.error(LogTag, "#approveRequest(): !initialized")
-            return null
+            return
         }
         if (!sessionApproved.get()) {
             logger.warning(LogTag, "#approveRequest(): session isn't approved")
             failureCallback(Failure(type = FailureType.SessionError,
                                     message = "#approveRequest(): session isn't approved"))
-            return null
+            return
         }
 
-        val payload = JsonRpcResponse(id = messageId,
-                                      result = result)
+        coroutineScope.launch {
+            val payload = JsonRpcResponse(id = messageId,
+                                          result = result)
 
-        val finalMessageId: Long? = encryptPayloadAndPublish(messageId,
-                                                             payload,
-                                                             getResponseType(resultType),
-                                                             queueIfDisconnected = true)
+            val finalMessageId: Long? = encryptPayloadAndPublish(messageId,
+                                                                 payload,
+                                                                 getResponseType(resultType),
+                                                                 queueIfDisconnected = true)
 
-        // notify wallet
-        if (finalMessageId != null) {
-            val method = messageMethodMap[messageId]
-            logger.info(LogTag, "approveRequest($messageId), $method")
+            // notify wallet
+            if (finalMessageId != null) {
+                val method = messageMethodMap[messageId]
+                logger.info(LogTag, "approveRequest($messageId), $method")
 
-            when (method) {
-                is CustomRpcMethod -> {
-                    callback(RequestCallback.CustomResponse(messageId,
-                                                            result))
-                }
-                null -> {
-                    // messageMethodMap[messageId] data is somehow lost (activity/process death?)
-                    callback(RequestCallback.CustomResponse(messageId,
-                                                            result))
-                }
+                when (method) {
+                    is CustomRpcMethod -> {
+                        callback(RequestCallback.CustomResponse(messageId,
+                                                                result))
+                    }
+                    null -> {
+                        // messageMethodMap[messageId] data is somehow lost (activity/process death?)
+                        callback(RequestCallback.CustomResponse(messageId,
+                                                                result))
+                    }
 
-                is EthRpcMethod -> {
-                    when (method) {
-                        EthRpcMethod.Sign -> {
-                            callback(RequestCallback.EthSignResponse(messageId,
-                                                                     result as String))
-                        }
-                        EthRpcMethod.PersonalSign -> {
-                            callback(RequestCallback.EthSignResponse(messageId,
-                                                                     result as String))
-                        }
-                        EthRpcMethod.SignTypedData -> {
-                            callback(RequestCallback.EthSignResponse(messageId,
-                                                                     result as String))
-                        }
+                    is EthRpcMethod -> {
+                        when (method) {
+                            EthRpcMethod.Sign -> {
+                                callback(RequestCallback.EthSignResponse(messageId,
+                                                                         result as String))
+                            }
+                            EthRpcMethod.PersonalSign -> {
+                                callback(RequestCallback.EthSignResponse(messageId,
+                                                                         result as String))
+                            }
+                            EthRpcMethod.SignTypedData -> {
+                                callback(RequestCallback.EthSignResponse(messageId,
+                                                                         result as String))
+                            }
 
-                        EthRpcMethod.SignTransaction -> {
-                            callback(RequestCallback.EthSignTxResponse(messageId,
-                                                                       result as String))
-                        }
-                        EthRpcMethod.SendRawTransaction -> {
-                            callback(RequestCallback.EthSendRawTxResponse(messageId,
-                                                                          result as String?))
-                        }
-                        EthRpcMethod.SendTransaction -> {
-                            callback(RequestCallback.EthSendTxResponse(messageId,
-                                                                       result as String?))
+                            EthRpcMethod.SignTransaction -> {
+                                callback(RequestCallback.EthSignTxResponse(messageId,
+                                                                           result as String))
+                            }
+                            EthRpcMethod.SendRawTransaction -> {
+                                callback(RequestCallback.EthSendRawTxResponse(messageId,
+                                                                              result as String?))
+                            }
+                            EthRpcMethod.SendTransaction -> {
+                                callback(RequestCallback.EthSendTxResponse(messageId,
+                                                                           result as String?))
+                            }
                         }
                     }
-                }
 
-                else -> {
-                    logger.error(LogTag, "approveRequest() has unexpected method:$method. " +
-                                         "Must be one of [CustomRpcMethod, EthRpcMethod]")
-                    failureCallback(Failure(type = FailureType.InvalidResponse,
-                                            message = "approveRequest() has unexpected method:$method. " +
-                                                      "Must be one of [CustomRpcMethod, EthRpcMethod]"))
+                    else -> {
+                        logger.error(LogTag, "approveRequest() has unexpected method:$method. " +
+                                             "Must be one of [CustomRpcMethod, EthRpcMethod]")
+                        failureCallback(Failure(type = FailureType.InvalidResponse,
+                                                message = "approveRequest() has unexpected method:$method. " +
+                                                          "Must be one of [CustomRpcMethod, EthRpcMethod]"))
+                    }
                 }
             }
         }
-
-        return finalMessageId
     }
 
-    override suspend fun rejectRequest(messageId: Long,
-                                       errorType: JsonRpcErrorData?)
-            : Long? {
+    override fun rejectRequest(messageId: Long,
+                               errorType: JsonRpcErrorData?) {
         if (!initialized.get()) {
             logger.error(LogTag, "#rejectRequest(): !initialized")
-            return null
+            return
         }
         if (!sessionApproved.get()) {
             logger.warning(LogTag, "#rejectRequest(): session isn't approved")
             failureCallback(Failure(type = FailureType.SessionError,
                                     message = "#approveRequest(): session isn't approved"))
-            return null
+            return
         }
 
-        val payload = JsonRpcError(id = messageId,
-                                   error = errorType ?: JsonRpcErrorData(RpcErrorCode.Server,
-                                                                         "Request is Rejected!"))
-        val finalMessageId: Long? = encryptPayloadAndPublish(messageId,
-                                                             payload,
-                                                             JsonRpcError::class.java,
-                                                             queueIfDisconnected = true)
+        coroutineScope.launch {
+            val payload = JsonRpcError(id = messageId,
+                                       error = errorType ?: JsonRpcErrorData(RpcErrorCode.Server,
+                                                                             "Request is Rejected!"))
+            val finalMessageId: Long? = encryptPayloadAndPublish(messageId,
+                                                                 payload,
+                                                                 JsonRpcError::class.java,
+                                                                 queueIfDisconnected = true)
 
-        // notify wallet
-        if (finalMessageId != null) {
-            val method = messageMethodMap[messageId]
-            logger.info(LogTag, "rejectRequest($messageId), $method")
-            callback(RequestCallback.RequestRejected(messageId,
-                                                     payload.error))
+            // notify wallet
+            if (finalMessageId != null) {
+                val method = messageMethodMap[messageId]
+                logger.info(LogTag, "rejectRequest($messageId), $method")
+                callback(RequestCallback.RequestRejected(messageId,
+                                                         payload.error))
+            }
         }
-
-        return finalMessageId
     }
     // endregion
 

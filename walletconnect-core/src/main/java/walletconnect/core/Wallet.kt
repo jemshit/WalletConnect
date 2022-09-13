@@ -40,22 +40,17 @@ interface Wallet : SessionLifecycle {
      * @param[result]
      * @param[resultType] Make sure Type is correct.
      *                   E.g: (for Lists, it should be `jsonAdapter.getParametrizedType(List::class.java,String::class.java)`
-     * @return [messageId] or null if error
      */
-    suspend fun approveRequest(messageId: Long,
-                               result: Any?,
-                               resultType: Type)
-            : Long?
+    fun approveRequest(messageId: Long,
+                       result: Any?,
+                       resultType: Type)
 
     /**
      * @param[messageId] You must reply with same messageId of received request
      * @param[errorType] example: [JsonRpcErrorData] ([RpcErrorCode.Server],"Request is Rejected!")
-     *
-     * @return [messageId] or null if error
      */
-    suspend fun rejectRequest(messageId: Long,
-                              errorType: JsonRpcErrorData?)
-            : Long?
+    fun rejectRequest(messageId: Long,
+                      errorType: JsonRpcErrorData?)
 
     /**
      * Serializes, encrypts and sends payload to the peer
