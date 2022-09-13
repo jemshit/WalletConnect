@@ -14,8 +14,11 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - [WalletConnectCore#deleteSessionInternal](walletconnect/src/main/java/walletconnect/WalletConnectCore.kt) method
   is `private` now
 - [CallbackData#simplifiedName](walletconnect-core/src/main/java/walletconnect/core/session/callback/CallbackData.kt)
-  has `withContent:Boolean` parameter to get detailed message. 
+  has `withContent:Boolean` parameter to get detailed message.
 - Overridden `FailureType.toString` & `SignType.toString` methods
+- [SessionLifecycle#disconnectSocket](walletconnect-core/src/main/java/walletconnect/core/session/SessionLifecycle.kt)
+  , [SessionLifecycle#reconnectSocket](walletconnect-core/src/main/java/walletconnect/core/session/SessionLifecycle.kt)
+  methods are asynchronous now, they has additional `onRequested` parameter
 
 ## [0.6.3] - 2022-22-08
 

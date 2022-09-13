@@ -40,26 +40,27 @@ interface SessionLifecycle {
             : InitialSessionState?
 
     /**
-     * - Disconnects socket connection. States are NOT reset.
+     * - Disconnects socket connection **asynchronously**. States are NOT reset.
      * - Idempotent
      * - Thread Safe
-     * - Blocking because of internal lock
      * - If disconnected & reconnected, you are not subscribed to topic, myPeerId anymore,
      *   you need to resubscribe after reconnected. This is done automatically.
      * - If there are messages in incoming queue or outgoing queue of [Socket], they are not deleted
      * - [openSocket], [disconnectSocket], [reconnectSocket], [close] method calls are synchronized.
+     *
+     *
      */
-    fun disconnectSocket()
+    fun disconnectSocket(onRequested: (() -> Unit)? = null)
 
     /**
+     * - Reconnect socket connection **asynchronously**.
      * - Idempotent
      * - Thread Safe
-     * - Blocking because of internal lock
      * - If disconnected & reconnected, you are not subscribed to topic, myPeerId anymore,
      *   you need to resubscribe after reconnected. This is done automatically.
      * - [openSocket], [disconnectSocket], [reconnectSocket], [close] method calls are synchronized.
      */
-    fun reconnectSocket()
+    fun reconnectSocket(onRequested: (() -> Unit)? = null)
 
     /**
      * End of lifecycle. Closes [Socket], resets states **asynchronously**.

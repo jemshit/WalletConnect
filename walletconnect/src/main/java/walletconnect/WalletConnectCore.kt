@@ -251,28 +251,46 @@ abstract class WalletConnectCore(private val isDApp: Boolean,
         return initialState
     }
 
-    override fun disconnectSocket() {
+    override fun disconnectSocket(onRequested: (() -> Unit)?) {
         if (!initialized.get()) {
             logger.error(LogTag, "#disconnect(): !initialized")
             return
         }
 
-        socketConnectionLock.lock()
-        logger.info(LogTag, "#disconnect()")
-        socket.disconnect()
-        socketConnectionLock.unlock()
+        Thread {
+            socketConnectionLock.lock()
+            // double-check. multiple threads can pass initial check and wait in queue for lock
+            if (initialized.get()) {
+                logger.info(LogTag, "#disconnect()")
+                socket.disconnect()
+                socketConnectionLock.unlock()
+                onRequested?.invoke()
+            } else {
+                socketConnectionLock.unlock()
+                onRequested?.invoke()
+            }
+        }.start()
     }
 
-    override fun reconnectSocket() {
+    override fun reconnectSocket(onRequested: (() -> Unit)?) {
         if (!initialized.get()) {
             logger.error(LogTag, "#reconnectSocket(): !initialized")
             return
         }
 
-        socketConnectionLock.lock()
-        logger.info(LogTag, "#reconnectSocket()")
-        socket.reconnect()
-        socketConnectionLock.unlock()
+        Thread {
+            socketConnectionLock.lock()
+            // double-check. multiple threads can pass initial check and wait in queue for lock
+            if (initialized.get()) {
+                logger.info(LogTag, "#reconnectSocket()")
+                socket.reconnect()
+                socketConnectionLock.unlock()
+                onRequested?.invoke()
+            } else {
+                socketConnectionLock.unlock()
+                onRequested?.invoke()
+            }
+        }.start()
     }
 
     /**
