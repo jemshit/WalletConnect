@@ -23,6 +23,13 @@ enum class SignType {
             }
         }
     }
+
+    override fun toString(): String {
+        return when (this) {
+            Sign -> "Sign"
+            PersonalSign -> "PersonalSign"
+        }
+    }
 }
 
 /**

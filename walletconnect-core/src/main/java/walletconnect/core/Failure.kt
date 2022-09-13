@@ -82,6 +82,34 @@ sealed class FailureType {
     object InvalidResponse
         : FailureType()
 
+    override fun toString(): String {
+        return when (this) {
+            Decryption -> "Decryption"
+            DeserializeSessionMessage -> "DeserializeSessionMessage"
+            DeserializeSocketMessage -> "DeserializeSocketMessage"
+            Encryption -> "Encryption"
+            InvalidBridgeUrl -> "InvalidBridgeUrl"
+            InvalidEthAddress -> "InvalidEthAddress"
+            InvalidHMAC -> "InvalidHMAC"
+            InvalidHexString -> "InvalidHexString"
+            InvalidRequest -> "InvalidRequest"
+            InvalidResponse -> "InvalidResponse"
+            InvalidSymmetricKey -> "InvalidSymmetricKey"
+            InvalidTopic -> "InvalidTopic"
+            InvalidUri -> "InvalidUri"
+            InvalidVersion -> "InvalidVersion"
+            SerializeSessionMessage -> "SerializeSessionMessage"
+            SessionError -> "SessionError"
+            SessionIncomeFlow -> "SessionIncomeFlow"
+            SessionOutgoingFlow -> "SessionOutgoingFlow"
+            SigningHMAC -> "SigningHMAC"
+            SocketConnectionFlow -> "SocketConnectionFlow"
+            SocketMessageFlow -> "SocketMessageFlow"
+            SocketPublishFlow -> "SocketPublishFlow"
+            is SocketPublishMessage -> "SocketPublishMessage(${this.message})"
+        }
+    }
+
 }
 
 fun Exception.toFailure(type: FailureType,

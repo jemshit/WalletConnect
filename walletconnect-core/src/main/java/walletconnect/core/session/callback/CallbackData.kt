@@ -143,46 +143,125 @@ sealed interface RequestCallback
 
 }
 
-fun CallbackData.simplifiedName()
+fun CallbackData.simplifiedName(withContent: Boolean = false)
         : String {
     return when (this) {
-        is FailureCallback -> "Failure"
+        is FailureCallback -> {
+            if (withContent) {
+                "Failure(${this.failure.type})"
+            } else {
+                "Failure"
+            }
+        }
         is SessionCallback -> {
             when (this) {
-                is SessionCallback.LocalSessionStateUpdated -> ""
-                SessionCallback.SubscribedToMessages -> "SubscribedToMessages"
-                SessionCallback.SessionRestoredLocally -> "SessionRestoredLocally"
-                is SessionCallback.SessionRequested -> "SessionRequested"
-                is SessionCallback.SessionApproved -> "SessionApproved"
-                is SessionCallback.SessionUpdated -> "SessionUpdated"
-                is SessionCallback.SessionRejected -> "SessionRejected"
-                is SessionCallback.SessionDeleted -> if (byMe) "SessionDeletedByMe" else "SessionDeletedByPeer"
-                SessionCallback.SessionClosedLocally -> "SessionClosedLocally"
+                is SessionCallback.LocalSessionStateUpdated ->
+                    ""
+                SessionCallback.SubscribedToMessages ->
+                    "SubscribedToMessages"
+                SessionCallback.SessionRestoredLocally ->
+                    "SessionRestoredLocally"
+                is SessionCallback.SessionRequested -> if (withContent) {
+                    "$this"
+                } else {
+                    "SessionRequested"
+                }
+                is SessionCallback.SessionApproved -> if (withContent) {
+                    "$this"
+                } else {
+                    "SessionApproved"
+                }
+                is SessionCallback.SessionUpdated -> if (withContent) {
+                    "$this"
+                } else {
+                    "SessionUpdated"
+                }
+                is SessionCallback.SessionRejected -> if (withContent) {
+                    "$this"
+                } else {
+                    "SessionRejected"
+                }
+                is SessionCallback.SessionDeleted ->
+                    if (byMe) "SessionDeletedByMe" else "SessionDeletedByPeer"
+                SessionCallback.SessionClosedLocally ->
+                    "SessionClosedLocally"
             }
         }
         is SocketCallback -> {
             when (this) {
                 SocketCallback.SocketConnecting -> "Connecting"
                 SocketCallback.SocketConnected -> "Connected"
-                is SocketCallback.SocketMessage -> "onMessage"
+                is SocketCallback.SocketMessage -> if (withContent) {
+                    "onMessage($this)"
+                } else {
+                    "onMessage"
+                }
                 SocketCallback.SocketDisconnected -> "Disconnected"
                 SocketCallback.SocketClosed -> "Closed"
             }
         }
         is RequestCallback -> {
             when (this) {
-                is RequestCallback.CustomRequested -> "CustomRequested(${this.method})"
-                is RequestCallback.CustomResponse -> "CustomResponse"
-                is RequestCallback.EthSignRequested -> "EthSignRequested"
-                is RequestCallback.EthSignTypedDataRequested -> "EthSignTypedRequested"
-                is RequestCallback.EthSignResponse -> "EthSignResponse"
-                is RequestCallback.EthSignTxRequested -> "EthSignTxRequested"
-                is RequestCallback.EthSignTxResponse -> "EthSignTxResponse"
-                is RequestCallback.EthSendRawTxRequested -> "EthSendRawTxRequested"
-                is RequestCallback.EthSendRawTxResponse -> "EthSendRawTxResponse"
-                is RequestCallback.EthSendTxRequested -> "EthSendTxRequested"
-                is RequestCallback.EthSendTxResponse -> "EthSendTxResponse"
-                is RequestCallback.RequestRejected -> "RequestRejected"
+                is RequestCallback.CustomRequested -> if (withContent) {
+                    "$this"
+                } else {
+                    "CustomRequested(${this.method})"
+                }
+                is RequestCallback.CustomResponse -> if (withContent) {
+                    "$this"
+                } else {
+                    "CustomResponse"
+                }
+                is RequestCallback.EthSignRequested -> if (withContent) {
+                    "$this"
+                } else {
+                    "EthSignRequested"
+                }
+                is RequestCallback.EthSignTypedDataRequested -> if (withContent) {
+                    "$this"
+                } else {
+                    "EthSignTypedRequested"
+                }
+                is RequestCallback.EthSignResponse -> if (withContent) {
+                    "$this"
+                } else {
+                    "EthSignResponse"
+                }
+                is RequestCallback.EthSignTxRequested -> if (withContent) {
+                    "$this"
+                } else {
+                    "EthSignTxRequested"
+                }
+                is RequestCallback.EthSignTxResponse -> if (withContent) {
+                    "$this"
+                } else {
+                    "EthSignTxResponse"
+                }
+                is RequestCallback.EthSendRawTxRequested -> if (withContent) {
+                    "$this"
+                } else {
+                    "EthSendRawTxRequested"
+                }
+                is RequestCallback.EthSendRawTxResponse -> if (withContent) {
+                    "$this"
+                } else {
+                    "EthSendRawTxResponse"
+                }
+                is RequestCallback.EthSendTxRequested -> if (withContent) {
+                    "$this"
+                } else {
+                    "EthSendTxRequested"
+                }
+                is RequestCallback.EthSendTxResponse -> if (withContent) {
+                    "$this"
+                } else {
+                    "EthSendTxResponse"
+                }
+                is RequestCallback.RequestRejected -> if (withContent) {
+                    "$this"
+                } else {
+                    "RequestRejected"
+                }
             }
         }
     }
