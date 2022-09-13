@@ -266,6 +266,16 @@ coroutineScope.launch(dispatcherProvidedr.io()) {
     //  you can invoke corresponding MyCallback
 }
 
+// OR
+//dApp.sendRequest(
+//        method = ethSign.type.toMethod(),
+//        data = ethSign.toList(),
+//        itemType = String::class.java,
+//        onRequested = {},
+//        onRequestError = {},
+//        onCallback = {}
+//)
+
 // EthSendTransaction Request
 // Check sample for sending custom token using SmartContract address. 
 // There is also gas estimation API example for Binance Smart Chain
