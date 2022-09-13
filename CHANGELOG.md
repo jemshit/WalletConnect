@@ -7,6 +7,13 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- [WalletConnectCore.onClosing](walletconnect/src/main/java/walletconnect/WalletConnectCore.kt) protected method, called
+  in `close` so `DAppManager`/`WalletManager` can do cleanup
+- [DApp.sendRequest](walletconnect-core/src/main/java/walletconnect/core/DApp.kt) non-suspending method
+  with `onRequested`, `onRequestError`, `onCallback` params
+
 ### Changed
 
 - [SessionLifecycle.openSocket](walletconnect-core/src/main/java/walletconnect/core/session/SessionLifecycle.kt) method

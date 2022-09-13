@@ -38,6 +38,9 @@ class DAppManager(socket: Socket,
 
     private val LogTag = "DApp"
 
+    // No need for ConcurrentHashMap, because we don't iterate while adding/removing
+    private val messageIdCallbackMap: MutableMap<Long, (RequestCallback) -> Unit> = mutableMapOf()
+
     // region Session
     override fun sendSessionRequest(chainId: Int?) {
         if (!initialized.get()) {
@@ -178,6 +181,122 @@ class DAppManager(socket: Socket,
 
         return finalMessageId
     }
+
+    override fun sendRequest(method: JsonRpcMethod,
+                             data: List<Any>,
+                             itemType: Type,
+                             onRequested: (() -> Unit)?,
+                             onRequestError: ((String?) -> Unit)?,
+                             onCallback: ((RequestCallback) -> Unit)?) {
+        if (!initialized.get()) {
+            logger.error(LogTag, "#sendRequest(): !initialized")
+            onRequestError?.invoke("!initialized")
+            return
+        }
+        if (!sessionApproved.get()) {
+            logger.warning(LogTag, "#sendRequest(): session isn't approved")
+            onRequestError?.invoke("Session isn't approved")
+            failureCallback(Failure(type = FailureType.SessionError,
+                                    message = "#sendRequest(): session isn't approved"))
+            return
+        }
+
+        // extra validation could be done on [data] based on [method] (is address in approved accounts)
+
+        coroutineScope.launch {
+            val messageId = generateMessageId()
+            if (onCallback != null) {
+                // assign this before [encryptPayloadAndPublish], so callback will be in Map if response arrives very fast
+                // if on next lines we invoke onRequestError, then remove from Map
+                messageIdCallbackMap[messageId] = onCallback
+            }
+            val payload = JsonRpcRequest(id = messageId,
+                                         method = method,
+                                         params = data)
+
+            val finalMessageId: Long? = encryptPayloadAndPublish(messageId,
+                                                                 payload,
+                                                                 getRequestType(itemType),
+                                                                 queueIfDisconnected = true)
+
+            // notify dApp
+            if (finalMessageId == null) {
+                messageIdCallbackMap.remove(messageId)
+                onRequestError?.invoke("Couldn't encrypt or publish")
+            } else {
+                logger.info(LogTag, "SendRequest($messageId), $method")
+
+                // save for dApp
+                messageMethodMap[messageId] = method
+
+                try {
+                    when (method) {
+                        is CustomRpcMethod -> {
+                            onRequested?.invoke()
+                            callback(RequestCallback.CustomRequested(messageId,
+                                                                     method.value,
+                                                                     data))
+                        }
+
+                        is EthRpcMethod -> {
+                            onRequested?.invoke()
+
+                            when (method) {
+                                EthRpcMethod.Sign -> {
+                                    callback(RequestCallback.EthSignRequested(messageId,
+                                                                              EthSign(address = data[0] as String,
+                                                                                      message = data[1] as String,
+                                                                                      type = SignType.Sign)))
+                                }
+                                EthRpcMethod.PersonalSign -> {
+                                    callback(RequestCallback.EthSignRequested(messageId,
+                                                                              EthSign(address = data[1] as String,
+                                                                                      message = data[0] as String,
+                                                                                      type = SignType.PersonalSign)))
+                                }
+                                EthRpcMethod.SignTypedData -> {
+                                    callback(RequestCallback.EthSignTypedDataRequested(messageId,
+                                                                                       data[0] as String,
+                                                                                       data[1]))
+                                }
+
+                                EthRpcMethod.SignTransaction -> {
+                                    callback(RequestCallback.EthSignTxRequested(messageId,
+                                                                                data[0] as EthTransaction))
+                                }
+                                EthRpcMethod.SendRawTransaction -> {
+                                    callback(RequestCallback.EthSendRawTxRequested(messageId,
+                                                                                   data[0] as String))
+                                }
+                                EthRpcMethod.SendTransaction -> {
+                                    callback(RequestCallback.EthSendTxRequested(messageId,
+                                                                                data[0] as EthTransaction))
+                                }
+                            }
+                        }
+
+                        else -> {
+                            logger.error(LogTag, "sendRequest() has unexpected method:$method. " +
+                                                 "Must be one of [CustomRpcMethod, EthRpcMethod]")
+                            messageIdCallbackMap.remove(messageId)
+                            onRequestError?.invoke("sendRequest() has unexpected method:$method. " +
+                                                   "Must be one of [CustomRpcMethod, EthRpcMethod]")
+                            failureCallback(Failure(type = FailureType.InvalidRequest,
+                                                    message = "sendRequest() has unexpected method:$method. " +
+                                                              "Must be one of [CustomRpcMethod, EthRpcMethod]"))
+                        }
+                    }
+                } catch (error: Exception) {
+                    logger.error(LogTag, error.stackTraceToString())
+                    messageIdCallbackMap.remove(messageId)
+                    onRequestError?.invoke(error.stackTraceToString())
+                    failureCallback(Failure(type = FailureType.InvalidRequest,
+                                            message = error.stackTraceToString()))
+                }
+            }
+        }
+    }
+
     // endregion
 
     // region Incoming Messages
@@ -191,6 +310,7 @@ class DAppManager(socket: Socket,
             when (method) {
                 null -> {
                     logger.error(LogTag, "#handleJsonRpcRequest(): 'method' is not String")
+                    messageIdCallbackMap.remove(messageId)
                     failureCallback(Failure(type = FailureType.DeserializeSessionMessage))
                     reportInvalidSocketMessage(messageId,
                                                JsonRpcErrorData(RpcErrorCode.RequestMethodNotAvailable,
@@ -209,6 +329,7 @@ class DAppManager(socket: Socket,
                     // session ended by peer
                     if (!payload.params[0].approved) {
                         sessionApproved.set(false)
+                        messageIdCallbackMap.remove(messageId)
                         callback(SessionCallback.SessionDeleted(byMe = false))
                         close(deleteLocal = true,
                               deleteRemote = false)
@@ -216,6 +337,7 @@ class DAppManager(socket: Socket,
                     }
                     if (!sessionApproved.get()) {
                         logger.warning(LogTag, "Session wasn't approved, but wallet tries to update!")
+                        messageIdCallbackMap.remove(messageId)
                         failureCallback(Failure(type = FailureType.SessionError,
                                                 message = "Session wasn't approved, but wallet tries to update!"))
                         return
@@ -234,6 +356,7 @@ class DAppManager(socket: Socket,
                                          sessionState!!)
 
                     // notify dApp
+                    messageIdCallbackMap.remove(messageId)
                     callback(SessionCallback.SessionUpdated(
                             messageId = messageId,
                             chainId = payload.params[0].chainId,
@@ -248,6 +371,7 @@ class DAppManager(socket: Socket,
         } catch (error: Exception) {
             // List<Any>[0] might throw
             logger.error(LogTag, "#handleJsonRpcRequest(): ${error.stackTraceToString()}")
+            messageIdCallbackMap.remove(messageId)
             failureCallback(error.toFailure(type = FailureType.DeserializeSessionMessage))
             reportInvalidSocketMessage(messageId,
                                        JsonRpcErrorData(RpcErrorCode.InvalidJson,
@@ -277,6 +401,7 @@ class DAppManager(socket: Socket,
             if (!sessionResponsePayload.result.approved) {
                 sessionApproved.set(false)
                 // notify dApp
+                messageIdCallbackMap.remove(messageId)
                 callback(SessionCallback.SessionRejected(null))
                 close(deleteLocal = true,
                       deleteRemote = false)
@@ -303,6 +428,7 @@ class DAppManager(socket: Socket,
                                  sessionState!!)
 
             // notify dApp
+            messageIdCallbackMap.remove(messageId)
             callback(SessionCallback.SessionApproved(
                     messageId = messageId,
                     chainId = sessionResponsePayload.result.chainId,
@@ -315,6 +441,7 @@ class DAppManager(socket: Socket,
 
         if (!sessionApproved.get()) {
             logger.error(LogTag, "handleJsonRpcResponse() but !sessionApproved")
+            messageIdCallbackMap.remove(messageId)
             failureCallback(Failure(type = FailureType.SessionError,
                                     message = "handleJsonRpcResponse() but !sessionApproved"))
             return
@@ -329,6 +456,9 @@ class DAppManager(socket: Socket,
                 ) ?: return
 
                 // notify dApp
+                messageIdCallbackMap[messageId]?.invoke(RequestCallback.CustomResponse(messageId,
+                                                                                       payload.result))
+                messageIdCallbackMap.remove(messageId)
                 callback(RequestCallback.CustomResponse(messageId,
                                                         payload.result))
             }
@@ -341,6 +471,9 @@ class DAppManager(socket: Socket,
                 ) ?: return
 
                 // notify dApp
+                messageIdCallbackMap[messageId]?.invoke(RequestCallback.CustomResponse(messageId,
+                                                                                       payload.result))
+                messageIdCallbackMap.remove(messageId)
                 callback(RequestCallback.CustomResponse(messageId,
                                                         payload.result))
             }
@@ -355,6 +488,9 @@ class DAppManager(socket: Socket,
                         ) ?: return
 
                         // notify dApp
+                        messageIdCallbackMap[messageId]?.invoke(RequestCallback.EthSignResponse(messageId,
+                                                                                                payload.result))
+                        messageIdCallbackMap.remove(messageId)
                         callback(RequestCallback.EthSignResponse(messageId,
                                                                  payload.result))
                     }
@@ -366,6 +502,9 @@ class DAppManager(socket: Socket,
                         ) ?: return
 
                         // notify dApp
+                        messageIdCallbackMap[messageId]?.invoke(RequestCallback.EthSignResponse(messageId,
+                                                                                                payload.result))
+                        messageIdCallbackMap.remove(messageId)
                         callback(RequestCallback.EthSignResponse(messageId,
                                                                  payload.result))
                     }
@@ -377,6 +516,9 @@ class DAppManager(socket: Socket,
                         ) ?: return
 
                         // notify dApp
+                        messageIdCallbackMap[messageId]?.invoke(RequestCallback.EthSignResponse(messageId,
+                                                                                                payload.result))
+                        messageIdCallbackMap.remove(messageId)
                         callback(RequestCallback.EthSignResponse(messageId,
                                                                  payload.result))
                     }
@@ -389,6 +531,9 @@ class DAppManager(socket: Socket,
                         ) ?: return
 
                         // notify dApp
+                        messageIdCallbackMap[messageId]?.invoke(RequestCallback.EthSignTxResponse(messageId,
+                                                                                                  payload.result))
+                        messageIdCallbackMap.remove(messageId)
                         callback(RequestCallback.EthSignTxResponse(messageId,
                                                                    payload.result))
                     }
@@ -400,6 +545,9 @@ class DAppManager(socket: Socket,
                         ) ?: return
 
                         // notify dApp
+                        messageIdCallbackMap[messageId]?.invoke(RequestCallback.EthSendRawTxResponse(messageId,
+                                                                                                     payload.result as? String?))
+                        messageIdCallbackMap.remove(messageId)
                         callback(RequestCallback.EthSendRawTxResponse(messageId,
                                                                       payload.result as? String?))
                     }
@@ -411,6 +559,9 @@ class DAppManager(socket: Socket,
                         ) ?: return
 
                         // notify dApp
+                        messageIdCallbackMap[messageId]?.invoke(RequestCallback.EthSendTxResponse(messageId,
+                                                                                                  payload.result as? String?))
+                        messageIdCallbackMap.remove(messageId)
                         callback(RequestCallback.EthSendTxResponse(messageId,
                                                                    payload.result as? String?))
                     }
@@ -419,6 +570,7 @@ class DAppManager(socket: Socket,
 
             else -> {
                 logger.error(LogTag, "Unexpected method($method) in #handleJsonRpcResponse($messageId)")
+                messageIdCallbackMap.remove(messageId)
                 failureCallback(Failure(type = FailureType.InvalidResponse,
                                         message = "Unexpected method($method) in #handleJsonRpcResponse)($messageId)"))
             }
@@ -439,6 +591,7 @@ class DAppManager(socket: Socket,
             logger.debug(LogTag, "Received SessionReject")
             sessionApproved.set(false)
             // notify dApp
+            messageIdCallbackMap.remove(messageId)
             callback(SessionCallback.SessionRejected(payload.error.message))
             close(deleteLocal = true,
                   deleteRemote = false)
@@ -450,6 +603,9 @@ class DAppManager(socket: Socket,
             // there is chance where this might be null but still it should be RequestRejected.
             if (messageMethodMap[messageId] != null) {
                 // notify dApp
+                messageIdCallbackMap[messageId]?.invoke(RequestCallback.RequestRejected(messageId,
+                                                                                        payload.error))
+                messageIdCallbackMap.remove(messageId)
                 callback(RequestCallback.RequestRejected(messageId,
                                                          payload.error))
                 return
@@ -459,6 +615,7 @@ class DAppManager(socket: Socket,
         }
 
         /** messages from [reportInvalidSocketMessage] */
+        messageIdCallbackMap.remove(messageId)
         failureCallback(Failure(type = FailureType.SessionError,
                                 message = payload.error.toString()))
     }
@@ -467,10 +624,17 @@ class DAppManager(socket: Socket,
                                       messageId: Long) {
         logger.debug(LogTag, "#handleCustom(id:$messageId, payload:$decryptedPayload)")
 
+        messageIdCallbackMap[messageId]?.invoke(RequestCallback.CustomResponse(messageId,
+                                                                               decryptedPayload))
+        messageIdCallbackMap.remove(messageId)
         callback(RequestCallback.CustomResponse(messageId,
                                                 decryptedPayload))
 
     }
     // endregion
+
+    override fun onClosing() {
+        messageIdCallbackMap.clear()
+    }
 
 }

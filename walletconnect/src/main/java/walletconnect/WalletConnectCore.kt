@@ -105,9 +105,10 @@ abstract class WalletConnectCore(private val isDApp: Boolean,
             onBufferOverflow = BufferOverflow.SUSPEND
     )
     /**
-     * - used to invoke right callback
-     * - this might get lost in case of activity/process death etc..
-     * - don't clean this after processing, user might want to resend/retry
+     * - Used to invoke right callback
+     * - This might get lost in case of activity/process death etc..
+     * - Don't clean this after processing, user might want to resend/retry
+     * - No need for ConcurrentHashMap, because we don't iterate while adding/removing
      */
     protected val messageMethodMap: MutableMap<Long, JsonRpcMethod> = mutableMapOf()
     private val requestTypeCache: MutableMap<Type, Type> = mutableMapOf()
@@ -370,6 +371,8 @@ abstract class WalletConnectCore(private val isDApp: Boolean,
         }
     }
 
+    protected open fun onClosing() {}
+
     override fun close(deleteLocal: Boolean,
                        deleteRemote: Boolean,
                        delayMs: Long,
@@ -426,6 +429,7 @@ abstract class WalletConnectCore(private val isDApp: Boolean,
                     messageMethodMap.clear()
                     requestTypeCache.clear()
                     responseTypeCache.clear()
+                    onClosing()
 
                     // delete sessionState lastly, as above operations might persist updated state
                     if (deleteLocal) {

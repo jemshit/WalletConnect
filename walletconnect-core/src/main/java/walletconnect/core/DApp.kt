@@ -5,6 +5,7 @@
 package walletconnect.core
 
 import walletconnect.core.session.SessionLifecycle
+import walletconnect.core.session.callback.RequestCallback
 import walletconnect.core.session.model.SessionRequest
 import walletconnect.core.session.model.json_rpc.CustomRpcMethod
 import walletconnect.core.session.model.json_rpc.EthRpcMethod
@@ -21,6 +22,7 @@ interface DApp : SessionLifecycle {
     fun sendSessionRequest(chainId: Int?)
 
     /**
+     * - Suspending version of `sendRequest`
      * - Send any request such as ETH sendTransaction, sign, wallet specific requests ...
      * - You can store returned messageId mapped to Callback, (`Map<messageId, Callback>`), so when you
      *   receive response with same messageId, you can get corresponding Callback from Map and invoke it
@@ -35,6 +37,25 @@ interface DApp : SessionLifecycle {
                             data: List<Any>,
                             itemType: Type)
             : Long?
+
+    /**
+     * - Non suspending version of `sendRequest`
+     * - Send any request such as ETH sendTransaction, sign, wallet specific requests ...
+     *
+     * @param[method] one of [EthRpcMethod], [CustomRpcMethod]
+     * @param[data] list of any model, usually single item
+     * @param[itemType] Type of item in [data] list (not type of List!)
+     * @param[onRequested] triggered when request is sent
+     * @param[onRequestError] triggered if failed to send the request. This is called before global callback
+     * @param[onCallback] triggered when there is response from peer. Cast the [RequestCallback] to expected subclass.
+     *                    This is called before global callback
+     */
+    fun sendRequest(method: JsonRpcMethod,
+                    data: List<Any>,
+                    itemType: Type,
+                    onRequested: (() -> Unit)? = null,
+                    onRequestError: ((String?) -> Unit)? = null,
+                    onCallback: ((RequestCallback) -> Unit)? = null)
 
     /**
      * Serializes, encrypts and sends payload to the peer
