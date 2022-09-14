@@ -236,7 +236,7 @@ val dApp: DApp = createDApp(sessionStoreName = "...")
 // Open Socket
 dApp.openSocket(initialSessionState, 
                 callback = ::onSessionCallback, 
-                onOpen = {
+                onOpen = { freshOpen->
                     // sendSessionRequest() etc...
                 })
 
@@ -397,7 +397,9 @@ val wallet: Wallet = createWallet(sessionStoreName = "...")
 // Open Socket
 wallet.openSocket(initialSessionState,
                   callback = ::onSessionCallback,
-                  onOpen = {})
+                  onOpen = { freshOpen->
+                      
+                  })
 
 // Close Socket
 wallet.close(deleteLocal = false, deleteRemote = false)

@@ -15,6 +15,7 @@ import walletconnect.core.FailureType
 import walletconnect.core.adapter.JsonAdapter
 import walletconnect.core.cryptography.Cryptography
 import walletconnect.core.cryptography.hexToByteArray
+import walletconnect.core.session.FreshOpen
 import walletconnect.core.session.SessionLifecycle
 import walletconnect.core.session.callback.CallbackData
 import walletconnect.core.session.callback.FailureCallback
@@ -159,14 +160,16 @@ abstract class WalletConnectCore(private val isDApp: Boolean,
     // region Lifecycle
     override fun openSocket(initialState: InitialSessionState,
                             callback: ((CallbackData) -> Unit)?,
-                            onOpen: (() -> Unit)?) {
+                            onOpen: ((FreshOpen) -> Unit)?) {
         if (initialized.get()) {
+            onOpen?.invoke(false)
             return
         }
         if (socket.isConnected()) {
             logger.error(LogTag, "#openSocket(): Already socket.isConnected")
             failureCallback(Failure(type = FailureType.SessionError,
                                     message = "socket isConnected, can't reuse"))
+            onOpen?.invoke(false)
             return
         }
 
@@ -235,11 +238,11 @@ abstract class WalletConnectCore(private val isDApp: Boolean,
                     logger.error(LogTag, error.stackTraceToString())
                 } finally {
                     socketConnectionLock.unlock()
-                    onOpen?.invoke()
+                    onOpen?.invoke(true)
                 }
             } else {
                 socketConnectionLock.unlock()
-                onOpen?.invoke()
+                onOpen?.invoke(false)
             }
         }.start()
     }

@@ -10,6 +10,8 @@ import walletconnect.core.session.model.InitialSessionState
 import walletconnect.core.session_state.SessionStore
 import walletconnect.core.socket.Socket
 
+typealias FreshOpen = Boolean
+
 /**
  * - Session lifecycle is between [openSocket] and [close] calls.
  *   After [close], this instance can be reused again with new [openSocket] call.
@@ -29,11 +31,12 @@ interface SessionLifecycle {
      * - [openSocket], [disconnectSocket], [reconnectSocket], [close] method calls are synchronized.
      * - Callback might be called from different Threads, be aware when doing UI rendering in it.
      *
-     * @param[onOpen] notified when openSocket is finalized
+     * @param[onOpen] notified when openSocket is finalized. It will always be called even if it was already open,
+     *                FreshOpen will be false on that case
      */
     fun openSocket(initialState: InitialSessionState,
                    callback: ((CallbackData) -> Unit)?,
-                   onOpen: (() -> Unit)?)
+                   onOpen: ((FreshOpen) -> Unit)?)
 
     /** Returns [InitialSessionState] if instance is initialized, otherwise null */
     fun getInitialSessionState()
