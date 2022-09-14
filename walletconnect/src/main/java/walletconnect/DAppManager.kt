@@ -331,8 +331,8 @@ class DAppManager(socket: Socket,
                         sessionApproved.set(false)
                         messageIdCallbackMap.remove(messageId)
                         callback(SessionCallback.SessionDeleted(byMe = false))
-                        close(deleteLocal = true,
-                              deleteRemote = false)
+                        closeAsync(deleteLocal = true,
+                                   deleteRemote = false)
                         return
                     }
                     if (!sessionApproved.get()) {
@@ -403,8 +403,8 @@ class DAppManager(socket: Socket,
                 // notify dApp
                 messageIdCallbackMap.remove(messageId)
                 callback(SessionCallback.SessionRejected(null))
-                close(deleteLocal = true,
-                      deleteRemote = false)
+                closeAsync(deleteLocal = true,
+                           deleteRemote = false)
                 return
             }
 
@@ -593,8 +593,8 @@ class DAppManager(socket: Socket,
             // notify dApp
             messageIdCallbackMap.remove(messageId)
             callback(SessionCallback.SessionRejected(payload.error.message))
-            close(deleteLocal = true,
-                  deleteRemote = false)
+            closeAsync(deleteLocal = true,
+                       deleteRemote = false)
             return
         }
 

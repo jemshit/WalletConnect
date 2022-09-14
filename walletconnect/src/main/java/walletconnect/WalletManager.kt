@@ -165,8 +165,8 @@ class WalletManager(socket: Socket,
             // notify wallet
             callback(SessionCallback.SessionRejected(finalErrorMessage))
 
-            close(deleteLocal = true,
-                  deleteRemote = false)
+            closeAsync(deleteLocal = true,
+                       deleteRemote = false)
         }
     }
 
@@ -236,8 +236,8 @@ class WalletManager(socket: Socket,
                 ))
             } else {
                 callback(SessionCallback.SessionDeleted(byMe = true))
-                close(deleteLocal = true,
-                      deleteRemote = false)
+                closeAsync(deleteLocal = true,
+                           deleteRemote = false)
             }
         }
     }
@@ -423,8 +423,8 @@ class WalletManager(socket: Socket,
                     if (!payload.params[0].approved) {
                         sessionApproved.set(false)
                         callback(SessionCallback.SessionDeleted(byMe = false))
-                        close(deleteLocal = true,
-                              deleteRemote = false)
+                        closeAsync(deleteLocal = true,
+                                   deleteRemote = false)
                         return
                     }
                 }
