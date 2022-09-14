@@ -182,12 +182,12 @@ class DAppManager(socket: Socket,
         return finalMessageId
     }
 
-    override fun sendRequest(method: JsonRpcMethod,
-                             data: List<Any>,
-                             itemType: Type,
-                             onRequested: (() -> Unit)?,
-                             onRequestError: ((String?) -> Unit)?,
-                             onCallback: ((RequestCallback) -> Unit)?) {
+    override fun sendRequestAsync(method: JsonRpcMethod,
+                                  data: List<Any>,
+                                  itemType: Type,
+                                  onRequested: (() -> Unit)?,
+                                  onRequestError: ((String?) -> Unit)?,
+                                  onCallback: ((RequestCallback) -> Unit)?) {
         if (!initialized.get()) {
             logger.error(LogTag, "#sendRequest(): !initialized")
             onRequestError?.invoke("!initialized")

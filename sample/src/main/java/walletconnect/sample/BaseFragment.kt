@@ -10,7 +10,6 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.coroutineScope
-import androidx.lifecycle.lifecycleScope
 import com.google.gson.GsonBuilder
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
@@ -22,7 +21,6 @@ import com.tinder.scarlet.websocket.okhttp.newWebSocketFactory
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.isActive
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import walletconnect.DAppManager
@@ -97,8 +95,8 @@ abstract class BaseFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        sessionLifecycle.close(deleteLocal = false,
-                               deleteRemote = false)
+        sessionLifecycle.closeAsync(deleteLocal = false,
+                                    deleteRemote = false)
     }
     // endregion
 
@@ -135,18 +133,13 @@ abstract class BaseFragment : Fragment() {
                         // closed
                         sessionLifecycle.openSocket(
                                 event.sessionState.toInitialSessionState(),
-                                ::onSessionCallback,
-                                onOpen = {
-                                    if (viewLifecycleOwner.lifecycleScope.isActive) {
-                                        if (toDelete) {
-                                            sessionLifecycle.close(deleteLocal = true,
-                                                                   deleteRemote = true,
-                                                                   delayMs = 2_000L)
-                                        }
-                                    }
-                                }
+                                ::onSessionCallback
                         )
-
+                        if (toDelete) {
+                            sessionLifecycle.close(deleteLocal = true,
+                                                   deleteRemote = true,
+                                                   delayMs = 2_000L)
+                        }
                     } else {
                         // open
                         if (currentInitialSessionState == event.sessionState.toInitialSessionState()) {
@@ -161,24 +154,17 @@ abstract class BaseFragment : Fragment() {
                             sessionLifecycle.close(
                                     deleteLocal = false,
                                     deleteRemote = false,
-                                    delayMs = 500L,
-                                    onClosed = {
-                                        sessionLifecycle.openSocket(
-                                                event.sessionState.toInitialSessionState(),
-                                                ::onSessionCallback,
-                                                onOpen = {
-                                                    if (viewLifecycleOwner.lifecycleScope.isActive) {
-                                                        if (toDelete) {
-                                                            sessionLifecycle.close(deleteLocal = true,
-                                                                                   deleteRemote = true,
-                                                                                   delayMs = 2_000L)
-                                                        }
-                                                    }
-                                                }
-                                        )
-
-                                    }
+                                    delayMs = 500L
                             )
+                            sessionLifecycle.openSocket(
+                                    event.sessionState.toInitialSessionState(),
+                                    ::onSessionCallback
+                            )
+                            if (toDelete) {
+                                sessionLifecycle.close(deleteLocal = true,
+                                                       deleteRemote = true,
+                                                       delayMs = 2_000L)
+                            }
                         }
                     }
                 }

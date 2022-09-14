@@ -23,7 +23,6 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import walletconnect.core.DApp
 import walletconnect.core.cryptography.toHex
 import walletconnect.core.requests.eth.EthTransaction
@@ -112,29 +111,27 @@ class DAppFragment : BaseFragment() {
             binding.textConsole.text = ""
         }
         binding.buttonOpen.setOnClickListener {
-            dApp.openSocket(initialSessionState,
-                            callback = ::onSessionCallback,
-                            onOpen = null)
+            dApp.openSocketAsync(initialSessionState,
+                                 callback = ::onSessionCallback,
+                                 onOpened = null)
         }
         binding.buttonClose.setOnClickListener {
-            dApp.close(deleteLocal = false,
-                       deleteRemote = false)
+            dApp.closeAsync(deleteLocal = false,
+                            deleteRemote = false)
         }
         binding.buttonDelete.setOnClickListener {
-            dApp.close(deleteLocal = true,
-                       deleteRemote = true)
+            dApp.closeAsync(deleteLocal = true,
+                            deleteRemote = true)
         }
 
         binding.buttonSendSessionRequest.setOnClickListener {
             dApp.sendSessionRequest(null)
         }
         binding.buttonSwitchChain.setOnClickListener {
-            viewLifecycleOwner.lifecycleScope.launch(dispatcherProvider.io()) {
-                if (!approvedAddress.isNullOrBlank()) {
-                    dApp.sendRequest(CustomRpcMethods.SwitchEthChain,
-                                     data = listOf(SwitchChain("0x" + 56.toHex())),
-                                     itemType = SwitchChain::class.java)
-                }
+            if (!approvedAddress.isNullOrBlank()) {
+                dApp.sendRequestAsync(CustomRpcMethods.SwitchEthChain,
+                                      data = listOf(SwitchChain("0x" + 56.toHex())),
+                                      itemType = SwitchChain::class.java)
             }
         }
 
@@ -146,45 +143,35 @@ class DAppFragment : BaseFragment() {
             }
         }
         binding.buttonSignTx.setOnClickListener {
-            viewLifecycleOwner.lifecycleScope.launch(dispatcherProvider.io()) {
-                if (!approvedAddress.isNullOrBlank()) {
-                    dApp.sendRequest(EthRpcMethod.SignTransaction,
-                                     data = listOf(createTransaction()),
-                                     itemType = EthTransaction::class.java)
-                }
+            if (!approvedAddress.isNullOrBlank()) {
+                dApp.sendRequestAsync(EthRpcMethod.SignTransaction,
+                                      data = listOf(createTransaction()),
+                                      itemType = EthTransaction::class.java)
             }
         }
         binding.buttonSendTx.setOnClickListener {
-            viewLifecycleOwner.lifecycleScope.launch(dispatcherProvider.io()) {
-                if (!approvedAddress.isNullOrBlank()) {
-                    dApp.sendRequest(EthRpcMethod.SendTransaction,
-                                     data = listOf(createTransaction()),
-                                     itemType = EthTransaction::class.java)
-                }
+            if (!approvedAddress.isNullOrBlank()) {
+                dApp.sendRequestAsync(EthRpcMethod.SendTransaction,
+                                      data = listOf(createTransaction()),
+                                      itemType = EthTransaction::class.java)
             }
         }
         binding.buttonSendTokenTx.setOnClickListener {
-            viewLifecycleOwner.lifecycleScope.launch(dispatcherProvider.io()) {
-                if (!approvedAddress.isNullOrBlank()) {
-                    if (bnbVM.gas.value.isBlank()) {
-                        bnbVM.estimateGas(createTokenTransaction("", ""),
-                                          isTestNet = approvedChainId!! == 97)
-                        withContext(dispatcherProvider.ui()) {
-                            Toast.makeText(requireContext(), "Fetching GAS. Try Again", LENGTH_SHORT).show()
-                        }
+            if (!approvedAddress.isNullOrBlank()) {
+                if (bnbVM.gas.value.isBlank()) {
+                    bnbVM.estimateGas(createTokenTransaction("", ""),
+                                      isTestNet = approvedChainId!! == 97)
+                    Toast.makeText(requireContext(), "Fetching GAS. Try Again", LENGTH_SHORT).show()
 
-                    } else if (bnbVM.gasPrice.value.isBlank()) {
-                        bnbVM.getGasPrice(isTestNet = approvedChainId!! == 97)
-                        withContext(dispatcherProvider.ui()) {
-                            Toast.makeText(requireContext(), "Fetching GAS PRICE. Try Again", LENGTH_SHORT).show()
-                        }
+                } else if (bnbVM.gasPrice.value.isBlank()) {
+                    bnbVM.getGasPrice(isTestNet = approvedChainId!! == 97)
+                    Toast.makeText(requireContext(), "Fetching GAS PRICE. Try Again", LENGTH_SHORT).show()
 
-                    } else {
-                        dApp.sendRequest(EthRpcMethod.SendTransaction,
-                                         data = listOf(createTokenTransaction(bnbVM.gas.value,
-                                                                              bnbVM.gasPrice.value)),
-                                         itemType = EthTransaction::class.java)
-                    }
+                } else {
+                    dApp.sendRequestAsync(EthRpcMethod.SendTransaction,
+                                          data = listOf(createTokenTransaction(bnbVM.gas.value,
+                                                                               bnbVM.gasPrice.value)),
+                                          itemType = EthTransaction::class.java)
                 }
             }
         }
@@ -276,12 +263,13 @@ class DAppFragment : BaseFragment() {
                             //triggerDeepLink()
                         }
                         is RequestCallback.EthSignResponse -> {
-                            BottomSheetDialog(requireContext()).apply {
-                                setContentView(R.layout.text_item)
-                                val textView = findViewById<TextView>(R.id.textContent)
-                                textView?.text = "Signature:\n" + callbackData.signature
-                                show()
-                            }
+                            BottomSheetDialog(requireContext())
+                                    .apply {
+                                        setContentView(R.layout.text_item)
+                                        val textView = findViewById<TextView>(R.id.textContent)
+                                        textView?.text = "Signature:\n" + callbackData.signature
+                                    }
+                                    .show()
                         }
 
                         is RequestCallback.CustomRequested -> {
@@ -311,12 +299,13 @@ class DAppFragment : BaseFragment() {
                         }
 
                         is RequestCallback.RequestRejected -> {
-                            BottomSheetDialog(requireContext()).apply {
-                                setContentView(R.layout.text_item)
-                                val textView = findViewById<TextView>(R.id.textContent)
-                                textView?.text = "Rejected:\n" + callbackData.error.message
-                                show()
-                            }
+                            BottomSheetDialog(requireContext())
+                                    .apply {
+                                        setContentView(R.layout.text_item)
+                                        val textView = findViewById<TextView>(R.id.textContent)
+                                        textView?.text = "Rejected:\n" + callbackData.error.message
+                                    }
+                                    .show()
                         }
                     }
                 }

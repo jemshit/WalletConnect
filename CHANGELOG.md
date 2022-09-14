@@ -10,26 +10,30 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Added
 
 - [WalletConnectCore.onClosing](walletconnect/src/main/java/walletconnect/WalletConnectCore.kt) protected method, called
-  in `close` so `DAppManager`/`WalletManager` can do cleanup
-- [DApp.sendRequest](walletconnect-core/src/main/java/walletconnect/core/DApp.kt) non-suspending method
-  with `onRequested`, `onRequestError`, `onCallback` params
+  in `closeAsync` so `DAppManager`/`WalletManager` can do cleanup
+- [DApp.sendRequest](walletconnect-core/src/main/java/walletconnect/core/DApp.kt) has non-suspending
+  overload `sendRequestAsync` with `onRequested`, `onRequestError`, `onCallback` parameters
+- [SessionLifecycle.openSocketAsync](walletconnect-core/src/main/java/walletconnect/core/session/SessionLifecycle.kt)
+  has suspending `openSocket` overload
+- [SessionLifecycle.closeAsync](walletconnect-core/src/main/java/walletconnect/core/session/SessionLifecycle.kt)
+  has suspending `close` overload
+- [SessionLifecycle.disconnectSocketAsync](walletconnect-core/src/main/java/walletconnect/core/session/SessionLifecycle.kt)
+  has suspending `disconnectSocket` overload
+- [SessionLifecycle.reconnectSocketAsync](walletconnect-core/src/main/java/walletconnect/core/session/SessionLifecycle.kt)
+  has suspending `reconnectSocket` overload
 
 ### Changed
 
-- [SessionLifecycle.openSocket](walletconnect-core/src/main/java/walletconnect/core/session/SessionLifecycle.kt) method
-  is asynchronous now, it has additional `onOpen` callback which is always triggered even if it was already open
 - [WalletConnectCore.deleteSessionInternal](walletconnect/src/main/java/walletconnect/WalletConnectCore.kt) method
   is `private` now
 - [CallbackData.simplifiedName](walletconnect-core/src/main/java/walletconnect/core/session/callback/CallbackData.kt)
   has `withContent:Boolean` parameter to get detailed message.
 - Overridden `FailureType.toString` & `SignType.toString` methods
-- [SessionLifecycle.disconnectSocket](walletconnect-core/src/main/java/walletconnect/core/session/SessionLifecycle.kt)
-  , [SessionLifecycle.reconnectSocket](walletconnect-core/src/main/java/walletconnect/core/session/SessionLifecycle.kt)
-  methods are asynchronous now, they has additional `onRequested` parameter
 - [Wallet.approveRequest](walletconnect-core/src/main/java/walletconnect/core/Wallet.kt)
   , [Wallet.rejectRequest](walletconnect-core/src/main/java/walletconnect/core/Wallet.kt) are not `suspend` function
   anymore. Wallet do not need `messageId` (already knows from params). If it needs callback, callback is already called
   with `messageId`
+- Refactor sample code & README with new overloaded methods
 
 ## [0.6.3] - 2022-22-08
 

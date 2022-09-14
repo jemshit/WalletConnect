@@ -15,7 +15,7 @@ import walletconnect.core.FailureType
 import walletconnect.core.adapter.JsonAdapter
 import walletconnect.core.cryptography.Cryptography
 import walletconnect.core.cryptography.hexToByteArray
-import walletconnect.core.session.FreshOpen
+import walletconnect.core.session.Fresh
 import walletconnect.core.session.SessionLifecycle
 import walletconnect.core.session.callback.CallbackData
 import walletconnect.core.session.callback.FailureCallback
@@ -40,6 +40,7 @@ import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.locks.ReentrantLock
+import kotlin.coroutines.resume
 import kotlin.math.max
 
 abstract class WalletConnectCore(private val isDApp: Boolean,
@@ -54,22 +55,22 @@ abstract class WalletConnectCore(private val isDApp: Boolean,
 
     protected lateinit var coroutineScope: CoroutineScope
     protected val initialized = AtomicBoolean(false)
-    /** [openSocket], [disconnectSocket], [reconnectSocket], [close] method calls are synchronized */
+    /** [openSocketAsync], [disconnectSocketAsync], [reconnectSocketAsync], [closeAsync] method calls are synchronized */
     private val socketConnectionLock = ReentrantLock(true)
     @Volatile
-    /** Initialized in [openSocket] and never changes until next [openSocket] */
+    /** Initialized in [openSocketAsync] and never changes until next [openSocketAsync] */
     protected lateinit var initialState: InitialSessionState
     @Volatile
     /**
      * Old Session:
-     * - Restored on [openSocket]
+     * - Restored on [openSocketAsync]
      *
      * New Session:
      * - Wallet: partially initialized on [SessionCallback.SessionRequested], fully initialized on [SessionCallback.SessionApproved]
      * - DApp: fully initialized on [SessionCallback.SessionApproved]
      *
      * It is persisted on [SessionCallback.SessionApproved] and removed on ([SessionCallback.SessionDeleted] or [SessionCallback.SessionRejected]).
-     *  [close].deleteLocal hints for removal
+     *  [closeAsync].deleteLocal hints for removal
      */
     protected var sessionState: SessionState? = null
         set(value) {
@@ -158,18 +159,11 @@ abstract class WalletConnectCore(private val isDApp: Boolean,
     }
 
     // region Lifecycle
-    override fun openSocket(initialState: InitialSessionState,
-                            callback: ((CallbackData) -> Unit)?,
-                            onOpen: ((FreshOpen) -> Unit)?) {
+    override fun openSocketAsync(initialState: InitialSessionState,
+                                 callback: ((CallbackData) -> Unit)?,
+                                 onOpened: ((Fresh) -> Unit)?) {
         if (initialized.get()) {
-            onOpen?.invoke(false)
-            return
-        }
-        if (socket.isConnected()) {
-            logger.error(LogTag, "#openSocket(): Already socket.isConnected")
-            failureCallback(Failure(type = FailureType.SessionError,
-                                    message = "socket isConnected, can't reuse"))
-            onOpen?.invoke(false)
+            onOpened?.invoke(false)
             return
         }
 
@@ -226,8 +220,8 @@ abstract class WalletConnectCore(private val isDApp: Boolean,
                                 failureCallback(failure)
                                 if (isFatal) {
                                     // deadlock (because of 'socketConnectionLock') doesn't happen
-                                    close(deleteLocal = false,
-                                          deleteRemote = false)
+                                    closeAsync(deleteLocal = false,
+                                               deleteRemote = false)
                                 }
                             },
                             messageListener = { socketMessage ->
@@ -238,13 +232,31 @@ abstract class WalletConnectCore(private val isDApp: Boolean,
                     logger.error(LogTag, error.stackTraceToString())
                 } finally {
                     socketConnectionLock.unlock()
-                    onOpen?.invoke(true)
+                    onOpened?.invoke(true)
                 }
             } else {
                 socketConnectionLock.unlock()
-                onOpen?.invoke(false)
+                onOpened?.invoke(false)
             }
         }.start()
+    }
+
+    override suspend fun openSocket(initialState: InitialSessionState,
+                                    callback: ((CallbackData) -> Unit)?)
+            : Fresh {
+        return suspendCancellableCoroutine { continuation ->
+            openSocketAsync(
+                    initialState,
+                    callback,
+                    onOpened = { fresh ->
+                        continuation.resume(fresh)
+                    }
+            )
+
+            continuation.invokeOnCancellation {
+                // cleanup
+            }
+        }
     }
 
     override fun getInitialSessionState()
@@ -255,9 +267,10 @@ abstract class WalletConnectCore(private val isDApp: Boolean,
         return initialState
     }
 
-    override fun disconnectSocket(onRequested: (() -> Unit)?) {
+    override fun disconnectSocketAsync(onRequested: (() -> Unit)?) {
         if (!initialized.get()) {
             logger.error(LogTag, "#disconnect(): !initialized")
+            onRequested?.invoke()
             return
         }
 
@@ -276,9 +289,24 @@ abstract class WalletConnectCore(private val isDApp: Boolean,
         }.start()
     }
 
-    override fun reconnectSocket(onRequested: (() -> Unit)?) {
+    override suspend fun disconnectSocket() {
+        return suspendCancellableCoroutine { continuation ->
+            disconnectSocketAsync(
+                    onRequested = {
+                        continuation.resume(Unit)
+                    }
+            )
+
+            continuation.invokeOnCancellation {
+                // cleanup
+            }
+        }
+    }
+
+    override fun reconnectSocketAsync(onRequested: (() -> Unit)?) {
         if (!initialized.get()) {
             logger.error(LogTag, "#reconnectSocket(): !initialized")
+            onRequested?.invoke()
             return
         }
 
@@ -297,8 +325,22 @@ abstract class WalletConnectCore(private val isDApp: Boolean,
         }.start()
     }
 
+    override suspend fun reconnectSocket() {
+        return suspendCancellableCoroutine { continuation ->
+            reconnectSocketAsync(
+                    onRequested = {
+                        continuation.resume(Unit)
+                    }
+            )
+
+            continuation.invokeOnCancellation {
+                // cleanup
+            }
+        }
+    }
+
     /**
-     * Blocking version of `updateSession(chainId = null, accounts = null, approved = false)`. Only called from [close]
+     * Blocking version of `updateSession(chainId = null, accounts = null, approved = false)`. Only called from [closeAsync]
      */
     private fun deleteSessionInternal() {
         val chainId: Int? = null
@@ -376,12 +418,12 @@ abstract class WalletConnectCore(private val isDApp: Boolean,
 
     protected open fun onClosing() {}
 
-    override fun close(deleteLocal: Boolean,
-                       deleteRemote: Boolean,
-                       delayMs: Long,
-                       onClosed: (() -> Unit)?) {
+    override fun closeAsync(deleteLocal: Boolean,
+                            deleteRemote: Boolean,
+                            delayMs: Long,
+                            onClosed: ((Fresh) -> Unit)?) {
         if (!initialized.get()) {
-            onClosed?.invoke()
+            onClosed?.invoke(false)
             return
         }
 
@@ -421,6 +463,8 @@ abstract class WalletConnectCore(private val isDApp: Boolean,
                     incomingMessageQueue.resetReplayCache()
                     outgoingMessageQueue.resetReplayCache()
                     coroutineScope.cancel()
+                    // don't close, because while closing, [openSocket] can be waiting for lock, and its coroutine will be cancelled
+                    //lifecycleThreadPool.close()
 
                     // reset all
                     sessionState = null
@@ -445,13 +489,33 @@ abstract class WalletConnectCore(private val isDApp: Boolean,
                     logger.error(LogTag, error.stackTraceToString())
                 } finally {
                     socketConnectionLock.unlock()
-                    onClosed?.invoke()
+                    onClosed?.invoke(true)
                 }
             } else {
                 socketConnectionLock.unlock()
-                onClosed?.invoke()
+                onClosed?.invoke(false)
             }
         }.start()
+    }
+
+    override suspend fun close(deleteLocal: Boolean,
+                               deleteRemote: Boolean,
+                               delayMs: Long)
+            : Fresh {
+        return suspendCancellableCoroutine { continuation ->
+            closeAsync(
+                    deleteLocal,
+                    deleteRemote,
+                    delayMs,
+                    onClosed = { fresh ->
+                        continuation.resume(fresh)
+                    }
+            )
+
+            continuation.invokeOnCancellation {
+                // cleanup
+            }
+        }
     }
     // endregion
 
@@ -595,8 +659,8 @@ abstract class WalletConnectCore(private val isDApp: Boolean,
                     logger.error(LogTag, "#processIncomingMessageQueue(): ${it.stackTraceToString()}")
                     failureCallback(Failure(type = FailureType.SessionIncomeFlow,
                                             cause = it))
-                    close(deleteLocal = false,
-                          deleteRemote = false)
+                    closeAsync(deleteLocal = false,
+                               deleteRemote = false)
                 }
                 .launchIn(coroutineScope)
     }
@@ -822,8 +886,8 @@ abstract class WalletConnectCore(private val isDApp: Boolean,
                     logger.error(LogTag, "#processOutgoingMessageQueue(): ${it.stackTraceToString()}")
                     failureCallback(Failure(type = FailureType.SessionOutgoingFlow,
                                             cause = it))
-                    close(deleteLocal = false,
-                          deleteRemote = false)
+                    closeAsync(deleteLocal = false,
+                               deleteRemote = false)
                 }
                 .launchIn(coroutineScope)
     }

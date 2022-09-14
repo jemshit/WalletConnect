@@ -119,9 +119,9 @@ class WalletManager(socket: Socket,
         }*/
         val sessionRequestId = sessionRequestId
         if (sessionRequestId == null) {
-            logger.error(LogTag, "#approveSession(): sessionRequestId inconsistency!")
+            logger.error(LogTag, "#rejectSession(): sessionRequestId inconsistency!")
             failureCallback(Failure(type = FailureType.SessionError,
-                                    message = "#approveSession(): sessionRequestId inconsistency!"))
+                                    message = "#rejectSession(): sessionRequestId inconsistency!"))
             return
         }
 

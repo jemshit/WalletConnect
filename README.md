@@ -5,8 +5,8 @@ Implementation of [WalletConnect protocol V1](https://docs.walletconnect.com/tec
 - Heavily uses Kotlin **Coroutines**.
 - **Extendable**, you can provide your own implementation of almost anything
 - Can be used in any **Kotlin** or **Android** project. Only Android [sample app](sample) is provided.
-- **Warning**: Usage from Java projects is not tested
-- **Warning**: APIs are not final yet, breaking changes should be expected
+- ⚠️ Warning: Usage from Java projects is not tested
+- ⚠️ Warning: APIs are not final yet, breaking changes should be expected
 
 ### Install
 
@@ -209,8 +209,9 @@ fun createJsonAdapter()
 <details>
 <summary>DApp</summary>
 
+**Init**
+
 ```kotlin
-// Init
 val connectionParams = ConnectionParams(
         topic = UUID.randomUUID().toString(), // unique topic = unique session
         version = "1",
@@ -232,29 +233,61 @@ val initialSessionState = InitialSessionState(
 )
 
 val dApp: DApp = createDApp(sessionStoreName = "...")
+```
 
-// Open Socket
-dApp.openSocket(initialSessionState, 
-                callback = ::onSessionCallback, 
-                onOpen = { freshOpen->
-                    // sendSessionRequest() etc...
+**Open Socket**
+
+```kotlin
+dApp.openSocketAsync(initialSessionState,
+                     callback = ::onSessionCallback,
+                     onOpen = { freshOpened ->
+                         // sendSessionRequest() etc...
+                     })
+// or
+coroutineScope.launch(dispatcherProvider.io()) {
+    val freshOpened = dApp.openSocket(initialSessionState,
+                                      callback = ::onSessionCallback)
+    // sendSessionRequest() etc...
+}
+```
+
+**Close**
+
+```kotlin
+dApp.closeAsync(deleteLocal = false,
+                deleteRemote = false,
+                onClosed = { freshClosed ->
+                    // ..
                 })
+// or 
+coroutineScope.launch(dispatcherProvider.io()) {
+    val freshClosed = dApp.close(deleteLocal = false,
+                                 deleteRemote = false)
+    // ...
+}
 
+// close & delete session
+dApp.closeAsync(deleteLocal = true,
+                deleteRemote = true,
+                onClosed = { freshClosed ->
+                    // ..
+                })
+```
 
-// Close Socket
-dApp.close(deleteLocal = false, deleteRemote = false)
+**Session Request**
 
-// Close & Delete Session
-dApp.close(deleteLocal = true, deleteRemote = true)
-
-// Session Request
+```kotlin
 dApp.sendSessionRequest(chainId)
+```
 
-// Sign Request
-coroutineScope.launch(dispatcherProvidedr.io()) {
+**Sign Request**
+
+```kotlin
+coroutineScope.launch(dispatcherProvider.io()) {
     val ethSign = EthSign(address = "...",
                           message = "...", // raw string for SignType.Sign, hex string for SignType.PersonalSign
-                          type = SignType.Sign) // SignType.PersonalSign
+                          type = SignType.Sign) // or SignType.PersonalSign
+
     // ethSign.validate()
 
     val messageId: Long? = dApp.sendRequest(
@@ -266,17 +299,20 @@ coroutineScope.launch(dispatcherProvidedr.io()) {
     //  you can invoke corresponding MyCallback
 }
 
-// OR
-//dApp.sendRequest(
-//        method = ethSign.type.toMethod(),
-//        data = ethSign.toList(),
-//        itemType = String::class.java,
-//        onRequested = {},
-//        onRequestError = {},
-//        onCallback = {}
-//)
+// or
+dApp.sendRequestAsync(
+        method = ethSign.type.toMethod(),
+        data = ethSign.toList(),
+        itemType = String::class.java,
+        onRequested = {},
+        onRequestError = {},
+        onCallback = {}
+)
+```
 
-// EthSendTransaction Request
+**EthSendTransaction Request**
+
+```kotlin
 // Check sample for sending custom token using SmartContract address. 
 // There is also gas estimation API example for Binance Smart Chain
 // Check HexByteExtensions.kt for 'toHex' extension on String/Long/Int
@@ -299,7 +335,7 @@ fun createTransaction()
     )
 }
 
-coroutineScope.launch(dispatcherProvidedr.io()) {
+coroutineScope.launch(dispatcherProvider.io()) {
     // you can call EthTransaction.validate() before sending
     val messageId: Long? = dApp.sendRequest(
             EthRpcMethod.SendTransaction,
@@ -309,10 +345,22 @@ coroutineScope.launch(dispatcherProvidedr.io()) {
     // You can store Map<messageId, MyCallback>, so when you get response for this messageId in 'onSessionCallback', 
     //  you can invoke corresponding MyCallback
 }
+// or
+dApp.sendRequestAsync(
+        EthRpcMethod.SendTransaction,
+        data = listOf(createTransaction()),
+        itemType = EthTransaction::class.java,
+        onRequested = {},
+        onRequestError = {},
+        onCallback = {}
+)
+```
 
-// Custom Request
+**Custom Request**
+
+```kotlin
 // check JsonRpcMethod file for list of default provided
-coroutineScope.launch(dispatcherProvidedr.io()) {
+coroutineScope.launch(dispatcherProvider.io()) {
     val messageId: Long? = dApp.sendRequest(
             CustomRpcMethod("some_method_name"),
             data = listOf(MyClass()),
@@ -320,10 +368,26 @@ coroutineScope.launch(dispatcherProvidedr.io()) {
     )
 }
 
-// Custom SocketMessage
-// 'dApp.sendRequest' uses 'encryptPayloadAndPublish' under the hood, you can use 'encryptPayloadAndPublish' directly
+// or
+dApp.sendRequestAsync(
+        CustomRpcMethod("some_method_name"),
+        data = listOf(MyClass()),
+        itemType = MyClass::class.java,
+        onRequested = {},
+        onRequestError = {},
+        onCallback = {}
+)
+```
 
-// Other
+**Custom SocketMessage**
+
+```kotlin
+// 'dApp.sendRequest' uses 'encryptPayloadAndPublish' under the hood, you can use 'encryptPayloadAndPublish' directly
+```
+
+**Other**
+
+```kotlin
 // dApp.generateMessageId()
 // dApp.getInitialSessionState()   // inherited from SessionLifecycle interface
 // dApp.disconnectSocket()         // inherited from SessionLifecycle interface
@@ -369,7 +433,6 @@ fun triggerDeepLink() {
                 .show()
     }
 }
-
 ```
 
 </details>
@@ -377,8 +440,10 @@ fun triggerDeepLink() {
 <details>
 <summary>Wallet</summary>
 
+
+**Init**
+
 ```kotlin
-// Init
 val connectionParams: ConnectionParams // get through deeplink, QR code ...
 
 val initialSessionState = InitialSessionState(
@@ -393,49 +458,88 @@ val initialSessionState = InitialSessionState(
 )
 
 val wallet: Wallet = createWallet(sessionStoreName = "...")
+```
 
-// Open Socket
-wallet.openSocket(initialSessionState,
-                  callback = ::onSessionCallback,
-                  onOpen = { freshOpen->
-                      
+**Open Socket**
+
+```kotlin
+wallet.openSocketAsync(initialSessionState,
+                       callback = ::onSessionCallback,
+                       onOpen = { freshOpened ->
+                           // sendSessionRequest() etc...
+                       })
+// or
+coroutineScope.launch(dispatcherProvider.io()) {
+    val freshOpened = wallet.openSocket(initialSessionState,
+                                        callback = ::onSessionCallback)
+    // sendSessionRequest() etc...
+}
+```
+
+**Close**
+
+```kotlin
+wallet.closeAsync(deleteLocal = false,
+                  deleteRemote = false,
+                  onClosed = { freshClosed ->
+                      // ..
                   })
+// or 
+coroutineScope.launch(dispatcherProvider.io()) {
+    val freshClosed = wallet.close(deleteLocal = false,
+                                   deleteRemote = false)
+    // ...
+}
 
-// Close Socket
-wallet.close(deleteLocal = false, deleteRemote = false)
+// close & delete session
+wallet.closeAsync(deleteLocal = true,
+                  deleteRemote = true,
+                  onClosed = { freshClosed ->
+                      // ..
+                  })
+```
 
-// Close & Delete Session
-wallet.close(deleteLocal = true, deleteRemote = true)
+**Session Request**
 
-// Approve Session Request
-wallet.approveSession(chainId = 1, accounts = listOf("0x621261D26847B423Df639848Fb53530025a008e8"))
+```kotlin
+// Approve
+wallet.approveSession(chainId = 1,
+                      accounts = listOf("0x621261D26847B423Df639848Fb53530025a008e8"))
 
-// Reject Session Request
+// Reject
 wallet.rejectSession()
 
-// Update Session
+// Update
 // if 'approved' is false, close() is called internally. Session is deleted from both peers
 wallet.updateSession(chainId = 2,
                      accounts = listOf("0x621261D26847B423Df639848Fb53530025a008e8"),
                      approved = true)
+```
 
-// Approve Request
-coroutineScope.launch(dispatcherProvidedr.io()) {
-    // respond with same messageId!
-    wallet.approveRequest(messageId,
-                          result = signature, // or anything else
-                          resultType = String::class.java)
-}
+**Other Requests**
 
-// Reject Request
-coroutineScope.launch(dispatcherProvidedr.io()) {
-    wallet.rejectRequest(messageId, JsonRpcErrorData())
-}
+```kotlin
+// respond with same messageId!
 
-// Custom SocketMessage
+// Approve
+wallet.approveRequest(messageId,
+                      result = signature, // or anything else
+                      resultType = String::class.java)
+
+// Reject
+wallet.rejectRequest(messageId,
+                     JsonRpcErrorData())
+```
+
+**Custom SocketMessage**
+
+```kotlin
 // you can use 'encryptPayloadAndPublish' directly to send custom SocketMessage
+```
 
-// Other
+**Other**
+
+```kotlin
 // dApp.generateMessageId()
 // dApp.getInitialSessionState()   // inherited from SessionLifecycle interface
 // dApp.disconnectSocket()         // inherited from SessionLifecycle interface
@@ -466,7 +570,6 @@ fun onSessionCallback(callbackData: CallbackData) {
         }
     }
 }
-
 ```
 
 </details>
@@ -494,7 +597,6 @@ sessionStore.getAllAsFlow()
         .launchIn(coroutineScope)
 
 // Check SessionStore for other methods
-
 ```
 
 </details>
@@ -503,6 +605,7 @@ sessionStore.getAllAsFlow()
 <summary>Helpers</summary>
 
 [Cryptography.kt](walletconnect-core/src/main/java/walletconnect/core/cryptography/Cryptography.kt)
+
 - encrypt
 - decrypt
 - computeHMAC
@@ -510,6 +613,7 @@ sessionStore.getAllAsFlow()
 - generateSymmetricKey
 
 [HexByteExtensions](walletconnect-core/src/main/java/walletconnect/core/cryptography/HexByteExtensions.kt)
+
 - String.hexToByteArray
 - String.isHex
 - String.toHex

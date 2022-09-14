@@ -96,17 +96,17 @@ class WalletFragment : BaseFragment() {
             binding.textConsole.text = ""
         }
         binding.buttonOpen.setOnClickListener {
-            wallet.openSocket(initialSessionState,
-                              callback = ::onSessionCallback,
-                              onOpen = null)
+            wallet.openSocketAsync(initialSessionState,
+                                   callback = ::onSessionCallback,
+                                   onOpened = null)
         }
         binding.buttonClose.setOnClickListener {
-            wallet.close(deleteLocal = false,
-                         deleteRemote = false)
+            wallet.closeAsync(deleteLocal = false,
+                              deleteRemote = false)
         }
         binding.buttonDelete.setOnClickListener {
-            wallet.close(deleteLocal = true,
-                         deleteRemote = true)
+            wallet.closeAsync(deleteLocal = true,
+                              deleteRemote = true)
         }
 
         binding.buttonAcceptSessionRequest.setOnClickListener {
@@ -129,10 +129,10 @@ class WalletFragment : BaseFragment() {
         }
 
         binding.buttonDisconnect.setOnClickListener {
-            wallet.disconnectSocket()
+            wallet.disconnectSocketAsync()
         }
         binding.buttonReconnect.setOnClickListener {
-            wallet.reconnectSocket()
+            wallet.reconnectSocketAsync()
         }
 
         binding.imageSessionList.setOnClickListener {
