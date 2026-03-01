@@ -5,8 +5,6 @@ Implementation of [WalletConnect protocol V1](https://docs.walletconnect.com/tec
 - Heavily uses Kotlin **Coroutines**.
 - **Extendable**, you can provide your own implementation of almost anything
 - Can be used in any **Kotlin** or **Android** project. Only Android [sample app](sample) is provided.
-- ⚠️ Warning: Usage from Java projects is not tested
-- ⚠️ Warning: APIs are not final yet, breaking changes should be expected
 
 ### Install
 
@@ -767,20 +765,3 @@ Example in [sample](sample/proguard-rules.pro)
 ```
 
 </details>
-
-### Todo
-
-- Java interop. [1](https://kotlinlang.org/docs/java-to-kotlin-interop.html)
-  , [2](https://www.baeldung.com/kotlin/jvm-annotations)
-- Use sample as wallet, connecting to web dApp
-  using [barcode](https://github.com/trustwallet/wallet-connect-kotlin/commit/fbb51e74349634a04e001091ec2db2d6e9a5053d)
-- Editable Transaction Screen in sample app
-- Unit tests for [DAppManager](walletconnect/src/main/java/walletconnect/DAppManager.kt)
-  , [WalletManager](walletconnect/src/main/java/walletconnect/WalletManager.kt)
-  , [WalletConnectCore](walletconnect/src/main/java/walletconnect/WalletConnectCore.kt)
-- Get rid of [DispatcherProvider](walletconnect-core/src/main/java/walletconnect/core/util/DispatcherProvider.kt)
-- [walletconnect-requests](walletconnect-requests/src/main/java/walletconnect/requests) module for custom
-  request/response models
-- Maybe `walletconnect-store-room` DB implementation
-  of [SessionStore](walletconnect-core/src/main/java/walletconnect/core/session_state/SessionStore.kt)
-- Maybe everything could be expressed with state machine
